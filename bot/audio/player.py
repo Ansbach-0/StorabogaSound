@@ -50,14 +50,13 @@ class AudioPlayer:
             "quiet": True,
             "no_warnings": True,
             "default_search": "ytsearch",
-            # CRITICAL: The residential proxy corrupts SSL after ~2MB of data.
-            # Without chunking, large downloads restart from 0 on each retry
-            # and never complete. With 1MB chunks, each HTTP Range request
-            # completes before the corruption threshold, and failed chunks
-            # retry individually without losing progress.
+            # The residential proxy corrupts SSL after ~2MB of data transfer.
+            # yt-dlp resumes from the last good position on each retry, so
+            # many retries eventually complete even a flaky download.
+            # http_chunk_size keeps each request under the corruption threshold.
             "http_chunk_size": 1048576,
-            "retries": 15,
-            "fragment_retries": 15,
+            "retries": 50,
+            "fragment_retries": 50,
             # CRITICAL: JS runtime for EJS n-challenge solving.
             "js_runtimes": {"deno": {}, "node": {}},
             "extractor_args": {"youtube": {"player_client": ["android_vr", "web_safari"]}},
