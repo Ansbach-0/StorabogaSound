@@ -28,7 +28,7 @@ export default function Admin({ user }: AdminProps) {
   // Internal admin tier guard
   if (user.tier !== "admin") {
     return (
-      <div className="main-container p-6 w-full h-full flex items-center justify-center">
+      <div className="main-container p-8 lg:p-10 w-full h-full flex items-center justify-center">
         <section className="paper-sculpted-panel p-8 text-center flex flex-col items-center gap-4 max-w-md">
           <h2 className="stamped-title text-2xl text-[#FF410D]">ACCESS DENIED</h2>
           <p className="font-mono text-sm text-[#C6C6C6]">
