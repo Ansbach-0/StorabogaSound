@@ -6,10 +6,14 @@ It clones the repo, copies .env, installs deps, and launches the bot.
 
 import hashlib
 import os
+import platform
 import shutil
 import subprocess
 import sys
 import time
+import urllib.request
+import zipfile
+from pathlib import Path
 
 REPO_DIR = "StorabogaSound"
 GIT_ADDRESS = os.environ.get("GIT_ADDRESS", "https://github.com/Ansbach-0/StorabogaSound")
@@ -97,6 +101,57 @@ def install_deps():
         print(f"[bootstrap] pip install FAILED: {result.stderr}")
         sys.exit(1)
     print("[bootstrap] Dependencies installed")
+
+
+DENO_VERSION = "2.3.6"
+
+
+def install_deno():
+    """Install deno JS runtime (needed by yt-dlp for EJS challenge solving).
+
+    Without deno, YouTube returns 'The page needs to be reloaded' because
+    the n-challenge can't be solved. yt-dlp 2026.07.04 defaults to deno
+    only for EJS; node support is incomplete. This is the critical missing
+    piece from the working the reference bot bot.
+    """
+    if shutil.which("deno"):
+        print("[bootstrap] deno already on PATH")
+        return
+    local_deno = Path("/home/container/.local/bin/deno")
+    if local_deno.exists() and local_deno.stat().st_mode & 0o100:
+        print("[bootstrap] deno already installed at ~/.local/bin/deno")
+        os.environ["PATH"] = f"/home/container/.local/bin:{os.environ.get('PATH', '')}"
+        return
+
+    arch = platform.machine()
+    if arch in ("x86_64", "amd64"):
+        deno_arch = "x86_64"
+    elif arch in ("aarch64", "arm64"):
+        deno_arch = "aarch64"
+    else:
+        print(f"[bootstrap] Cannot install deno: unsupported arch {arch}", file=sys.stderr, flush=True)
+        return
+
+    url = f"https://github.com/denoland/deno/releases/download/v{DENO_VERSION}/deno-{deno_arch}-unknown-linux-gnu.zip"
+    tmp_zip = f"/tmp/deno-{DENO_VERSION}.zip"
+    install_dir = Path("/home/container/.local/bin")
+    install_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"[bootstrap] Downloading deno v{DENO_VERSION} ({deno_arch})...", flush=True)
+    urllib.request.urlretrieve(url, tmp_zip)
+    with zipfile.ZipFile(tmp_zip) as z:
+        z.extractall(str(install_dir))
+    os.chmod(str(install_dir / "deno"), 0o755)
+    os.unlink(tmp_zip)
+
+    result = subprocess.run([str(local_deno), "--version"], capture_output=True, text=True)
+    if result.returncode == 0:
+        print(f"[bootstrap] deno installed: {result.stdout.strip().split(chr(10))[0]}", flush=True)
+    else:
+        print(f"[bootstrap] deno install FAILED: {result.stderr}", file=sys.stderr, flush=True)
+        return
+
+    os.environ["PATH"] = f"/home/container/.local/bin:{os.environ.get('PATH', '')}"
 
 
 def install_node():
@@ -228,5 +283,6 @@ if __name__ == "__main__":
     copy_env()
     install_deps()
     install_node()
+    install_deno()
     build_frontend()
     launch_bot()
