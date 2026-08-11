@@ -1,0 +1,1 @@
+"""Storaboga Sound bot package."""

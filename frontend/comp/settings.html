@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0">
+  <title>Storaboga Sound — Settings</title>
+  <style>
+    /* ============================================================
+       DEADLOCK FONT DEFINITIONS (LOCAL OTF FILES ONLY)
+       ============================================================ */
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Text Demo';
+      src: url('assets/fonts/retailtextdemo-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Text Demo';
+      src: url('assets/fonts/retailtextdemo-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    /* ============================================================
+       DECOMPILED DEADLOCK COLOR TOKENS & DESIGN SYSTEM
+       ============================================================ */
+    :root {
+      --off-black: #10130D;       /* Warm green-tinted black background */
+      --off-white: #FFEFD7;       /* Primary text — warm cream dossier paper */
+      --soul-color: #70F8C1;      /* Active/now-playing glow — ectoplasmic mint */
+      --shard-color: #99FFD6;     /* Brighter mint for selected items */
+      --brand-green: #5FE69E;    /* Active channel / status indicator */
+      --gold-color: #FFED79;      /* Progress accent / gold indicators */
+      --spirit-color: #8A55B3;    /* Deep purple accent */
+      --weapon-color: #E58A00;    /* Warm amber / identity tags */
+      --enemy-color: #FF410D;     /* Destructive / stop / leave voice */
+      --team1-neutral: #55503E;   /* Muted secondary warm text */
+      --team2-color: #4D75C3;     /* Selection accent */
+      --steam-blue: #1A9FFF;      /* Link / info badge */
+      --rank0-color: #333333;     /* Base panel background */
+      --default-bg-1: #333333;    /* Panel tier 1 */
+      --default-bg-2: #404040;    /* Panel tier 2 */
+      --silvered: #C6C6C6;        /* Muted grey — inactive labels */
+      --warm-backer: #564a48;     /* Warm brown backer tint */
+      --card-shape-default: #575757;
+      --in-roster-wash: #c3dcd2;
+      --priority-amber: #ffc533;
+      --priority-mint: #92eac7;
+      --high-priority-mint: #33e59f;
+      --flux: var(--accent-dynamic, #70F8C1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background-color: var(--off-black);
+      font-family: 'Retail Demo', sans-serif;
+      color: var(--off-white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fixed Viewport Container (1920x1080) */
+    .dashboard-viewport {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-color: var(--off-black);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* Vignette Overlay */
+    .dashboard-viewport::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(16, 19, 13, 0.5) 85%, rgba(30, 20, 10, 0.3) 100%);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* Smoke Background Layer */
+    .smoke-bg-layer {
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/smoke_bg.png");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.35;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Ambient Glows */
+    .ambient-glow-left {
+      position: absolute;
+      top: 15%;
+      left: 10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(112, 248, 193, 0.08) 0%, rgba(86, 143, 120, 0.02) 60%, transparent 80%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .ambient-glow-right {
+      position: absolute;
+      bottom: 10%;
+      right: 5%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(230, 198, 148, 0.09) 0%, rgba(146, 112, 60, 0.02) 60%, transparent 80%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .paper-sculpted-panel {
+      position: relative;
+      background: radial-gradient(circle at 50% 30%, rgba(44, 42, 40, 0.92) 0%, rgba(24, 23, 22, 0.95) 100%);
+      border: 1px solid rgba(255, 239, 215, 0.12);
+      box-shadow: inset rgba(0, 0, 0, 0.6) 0px 0px 32px 0px, 0px 8px 24px rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+    }
+
+    .paper-sculpted-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .stamped-title {
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--off-white);
+      text-shadow: 0px 0px 0px 5px rgba(16,19,13,0.95), 2px 2px 0px 3px #10130D;
+      -webkit-mask-image: url("assets/masks/text_speckle_mask.png");
+      mask-image: url("assets/masks/text_speckle_mask.png");
+      -webkit-mask-size: cover;
+      mask-size: cover;
+    }
+
+    /* TOP HEADER BAR */
+    .top-bar {
+      position: relative;
+      z-index: 10;
+      height: 72px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(ellipse at 50% 100%, rgba(40, 44, 34, 0.96) 0%, rgba(16, 19, 13, 0.99) 100%);
+      border-bottom: 1px solid rgba(255, 239, 215, 0.14);
+      box-shadow: inset rgba(0, 0, 0, 0.5) 0px -2px 16px 0px, 0 4px 20px rgba(0, 0, 0, 0.7);
+    }
+
+    .top-bar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-logo-crest {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba(112, 248, 193, 0.25) 0%, transparent 70%);
+      border: 1px solid var(--soul-color);
+      transform: rotate(45deg);
+    }
+
+    .brand-logo-inner {
+      width: 16px;
+      height: 16px;
+      background-color: var(--soul-color);
+    }
+
+    .brand-title {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .nav-tab {
+      position: relative;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      color: var(--silvered);
+      background-color: #33322d;
+      -webkit-mask-image: url("assets/masks/button_mask_threshold.png");
+      mask-image: url("assets/masks/button_mask_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1), background-color 0.04s ease;
+    }
+
+    .nav-tab::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/button_paper_tile.png");
+      background-repeat: repeat;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .nav-tab:hover {
+      color: var(--off-white);
+      background-color: #48463f;
+      transform: scale(1.03);
+    }
+
+    .nav-tab.active {
+      color: var(--off-white);
+      background: linear-gradient(180deg, #33e59f 0%, #1f4f3c 100%);
+      text-shadow: 0px 0px 0px 5px rgba(16,19,13,0.95), 2px 2px 0px 3px #10130D;
+    }
+
+    .tab-active-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--soul-color);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .voice-status-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 19, 13, 0.85);
+      border: 1px solid rgba(95, 230, 158, 0.4);
+      padding: 6px 14px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand-green);
+    }
+
+    .voice-channel-name {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 12px;
+      color: var(--brand-green);
+      font-weight: 700;
+    }
+
+    .user-card-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(30, 32, 26, 0.8);
+      border: 1px solid rgba(255, 239, 215, 0.15);
+      padding: 5px 12px 5px 6px;
+    }
+
+    .user-avatar-frame {
+      width: 36px;
+      height: 36px;
+      background: var(--spirit-color);
+      border: 1.5px solid var(--soul-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      color: var(--off-white);
+      font-size: 16px;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-family: 'Retail Demo', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--off-white);
+      line-height: 1.1;
+    }
+
+    .admin-badge {
+      font-family: 'Retail Text Demo', monospace;
+      font-weight: 700;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--spirit-color);
+      background: rgba(138, 85, 179, 0.2);
+      border: 1px solid rgba(138, 85, 179, 0.4);
+      padding: 1px 5px;
+      margin-top: 2px;
+    }
+
+    /* MAIN CONTAINER: TWO COLUMN LAYOUT */
+    .main-container {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      gap: 24px;
+      padding: 24px 32px;
+      height: calc(1080px - 72px - 56px);
+      overflow: hidden;
+    }
+
+    /* LEFT COLUMN: FORM SECTIONS */
+    .left-column {
+      flex: 1.35;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 24px 28px;
+      height: 100%;
+    }
+
+    .settings-header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .settings-title {
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .deco-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(229,138,0,0.3) 15%, rgba(255,237,121,0.75) 50%, rgba(229,138,0,0.3) 85%, transparent 100%);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      margin-top: 4px;
+    }
+
+    /* BRASS CONTROL PLATES */
+    .brass-control-plate {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      background: radial-gradient(circle at 40% 30%, rgba(48, 44, 38, 0.94) 0%, rgba(24, 22, 19, 0.96) 100%);
+      border: 1px solid rgba(255, 239, 215, 0.16);
+      box-shadow: inset 0 2px 4px rgba(255, 239, 215, 0.15), inset 0 -3px 8px rgba(0,0,0,0.8), 0 6px 20px rgba(0,0,0,0.6);
+      padding: 18px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      -webkit-mask-image: url("assets/masks/button_mask_threshold.png");
+      mask-image: url("assets/masks/button_mask_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+    }
+
+    .brass-control-plate::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.14;
+      pointer-events: none;
+    }
+
+    .plate-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .plate-label {
+      font-size: 16px;
+      letter-spacing: 1.2px;
+    }
+
+    .plate-value-readout {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 13px;
+      color: var(--gold-color);
+      font-weight: 700;
+    }
+
+    /* 12-SEGMENT VOLUME CONTROL */
+    .volume-segments-track {
+      position: relative;
+      width: 100%;
+      height: 28px;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      background: #12110e;
+      border: 1px solid rgba(255, 239, 215, 0.15);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
+    }
+
+    .volume-segment {
+      flex: 1;
+      height: 100%;
+      background-color: #1a1a14;
+      cursor: pointer;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+      -webkit-mask-image: url("assets/masks/progress_bar_threshold.png");
+      mask-image: url("assets/masks/progress_bar_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      transition: background 0.04s ease;
+    }
+
+    .volume-segment.filled {
+      background: linear-gradient(180deg, #FFED79 0%, #E58A00 100%);
+      box-shadow: 0 1px 4px rgba(229, 138, 0, 0.5);
+    }
+
+    /* DJ ROLE INPUT FIELD */
+    .dl-input {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--brand-green);
+      background: rgba(16, 15, 12, 0.9);
+      border: 1px solid rgba(229, 138, 0, 0.4);
+      padding: 10px 16px;
+      width: 100%;
+      outline: none;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+      transition: border-color 0.04s ease;
+    }
+
+    .dl-input:focus {
+      border-color: var(--gold-color);
+    }
+
+    /* MECHANICAL TOGGLE SWITCHES */
+    .toggles-list {
+      position: relative;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toggle-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+
+    .toggle-text {
+      font-family: 'Retail Demo', sans-serif;
+      font-size: 14px;
+      color: var(--off-white);
+    }
+
+    .brass-mech-switch {
+      position: relative;
+      width: 48px;
+      height: 24px;
+      background: #24221d;
+      border: 1px solid rgba(255, 239, 215, 0.2);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+      cursor: pointer;
+      -webkit-mask-image: url("assets/masks/button_mask_threshold.png");
+      mask-image: url("assets/masks/button_mask_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      transition: background 0.04s ease;
+    }
+
+    .brass-mech-switch.on {
+      background: #1f3d2f;
+      border-color: var(--brand-green);
+    }
+
+    .switch-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: linear-gradient(180deg, #575757 0%, #333 100%);
+      border: 1px solid rgba(255, 239, 215, 0.3);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1);
+    }
+
+    .brass-mech-switch.on .switch-knob {
+      transform: translateX(24px);
+      background: linear-gradient(180deg, #70F8C1 0%, #33e59f 100%);
+    }
+
+    /* SAVE BUTTON */
+    .save-stamp-btn {
+      position: relative;
+      z-index: 2;
+      width: 160px;
+      height: 48px;
+      margin-top: 4px;
+      padding: 12px 28px;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--off-white);
+      background: linear-gradient(180deg, #4d433b 0%, #2f2a24 100%);
+      border: 1px solid rgba(255, 239, 215, 0.25);
+      box-shadow: inset 0 2px 4px rgba(255, 239, 215, 0.25), inset 0 -3px 8px rgba(0, 0, 0, 0.8), 0 6px 20px rgba(0, 0, 0, 0.7);
+      -webkit-mask-image: url("assets/masks/button_mask_threshold.png");
+      mask-image: url("assets/masks/button_mask_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      cursor: pointer;
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1), background 0.04s ease;
+      align-self: flex-start;
+    }
+
+    .save-stamp-btn:hover {
+      background: linear-gradient(180deg, #66441e 0%, #36220d 100%);
+      border-color: var(--weapon-color);
+      transform: scale(1.03);
+    }
+
+    .save-stamp-btn:active {
+      transform: translateY(2px) scale(0.98);
+    }
+
+    /* RIGHT COLUMN: LIVE PROFILE PANEL */
+    .right-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .preview-panel {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      background: radial-gradient(circle at 40% 30%, rgba(38, 36, 32, 0.94) 0%, rgba(20, 19, 17, 0.97) 100%);
+      border: 1px solid rgba(255, 239, 215, 0.12);
+      box-shadow: inset rgba(0, 0, 0, 0.6) 0px 0px 32px 0px, 0px 8px 24px rgba(0, 0, 0, 0.7);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .preview-title {
+      font-size: 16px;
+      letter-spacing: 1.5px;
+      border-bottom: 1px solid rgba(255, 239, 215, 0.1);
+      padding-bottom: 8px;
+    }
+
+    .preview-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .preview-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .preview-item-label {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: var(--team1-neutral);
+      text-transform: uppercase;
+    }
+
+    .preview-item-val {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 14px;
+      color: var(--off-white);
+      font-weight: 700;
+    }
+
+    /* FOOTER BAR */
+    .bottom-bar {
+      position: relative;
+      z-index: 10;
+      height: 56px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(ellipse at 50% 0%, rgba(35, 38, 28, 0.98) 0%, rgba(14, 16, 11, 0.99) 100%);
+      border-top: 1px solid rgba(255, 239, 215, 0.14);
+      box-shadow: inset rgba(0, 0, 0, 0.5) 0px 2px 16px 0px, 0 -4px 20px rgba(0, 0, 0, 0.7);
+    }
+
+    .bottom-bar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .footer-left-tag, .footer-right-tag {
+      position: relative;
+      z-index: 2;
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: var(--silvered);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- FIXED VIEWPORT SHELL (1920x1080) -->
+  <div class="dashboard-viewport">
+
+    <!-- Atmospheric Background Layers -->
+    <div class="smoke-bg-layer"></div>
+    <div class="ambient-glow-left"></div>
+    <div class="ambient-glow-right"></div>
+
+    <!-- TOP HEADER BAR -->
+    <header class="top-bar">
+      <div class="brand-section">
+        <div class="brand-logo-crest">
+          <div class="brand-logo-inner"></div>
+        </div>
+        <div class="brand-title-box">
+          <h1 class="brand-title stamped-title">STORABOGA SOUND</h1>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <a href="dashboard.html" class="nav-tab">
+          <span>Now Playing</span>
+        </a>
+        <a href="dashboard.html" class="nav-tab">
+          <span>Queue</span>
+        </a>
+        <a href="dashboard.html" class="nav-tab">
+          <span>History</span>
+        </a>
+        <a href="status.html" class="nav-tab">
+          <span>Status</span>
+        </a>
+        <a href="settings.html" class="nav-tab active">
+          <span class="tab-active-dot"></span>
+          <span>Settings</span>
+        </a>
+        <a href="dashboard.html" class="nav-tab">
+          <span>Login with Discord</span>
+        </a>
+      </nav>
+
+      <!-- Connected User Profile -->
+      <div class="user-profile">
+        <div class="voice-status-chip">
+          <span class="pulse-dot"></span>
+          <span class="voice-channel-name">#lounge</span>
+        </div>
+        <div class="user-card-badge">
+          <div class="user-avatar-frame">V</div>
+          <div class="user-info">
+            <span class="user-name">Vini</span>
+            <span class="admin-badge">ADMIN</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN SETTINGS CONTAINER -->
+    <main class="main-container">
+
+      <!-- LEFT COLUMN: FORM CONTROLS -->
+      <section class="left-column paper-sculpted-panel">
+        
+        <div class="settings-header">
+          <h2 class="settings-title stamped-title">SETTINGS</h2>
+          <div class="deco-divider"></div>
+        </div>
+
+        <!-- 1. Volume Control (default_volume 0-100) -->
+        <div class="brass-control-plate">
+          <div class="plate-title-row">
+            <span class="plate-label stamped-title">VOLUME</span>
+            <span class="plate-value-readout" id="volume-val">50%</span>
+          </div>
+          <div class="volume-segments-track" id="volume-track">
+            <div class="volume-segment filled" data-seg="1"></div>
+            <div class="volume-segment filled" data-seg="2"></div>
+            <div class="volume-segment filled" data-seg="3"></div>
+            <div class="volume-segment filled" data-seg="4"></div>
+            <div class="volume-segment filled" data-seg="5"></div>
+            <div class="volume-segment filled" data-seg="6"></div>
+            <div class="volume-segment" data-seg="7"></div>
+            <div class="volume-segment" data-seg="8"></div>
+            <div class="volume-segment" data-seg="9"></div>
+            <div class="volume-segment" data-seg="10"></div>
+            <div class="volume-segment" data-seg="11"></div>
+            <div class="volume-segment" data-seg="12"></div>
+          </div>
+        </div>
+
+        <!-- 2. DJ Role (dj_role_id) -->
+        <div class="brass-control-plate">
+          <div class="plate-title-row">
+            <span class="plate-label stamped-title">DJ ROLE</span>
+          </div>
+          <input type="text" class="dl-input" id="dj-role-input" placeholder="@DJ" value="@DJ">
+        </div>
+
+        <!-- 3. Default Settings Toggles -->
+        <div class="brass-control-plate">
+          <div class="plate-title-row">
+            <span class="plate-label stamped-title">DEFAULT SETTINGS</span>
+          </div>
+          <div class="toggles-list">
+            <div class="toggle-row">
+              <span class="toggle-text">Auto-join voice when track is played</span>
+              <div class="brass-mech-switch on" id="toggle-autojoin">
+                <div class="switch-knob"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <span class="toggle-text">Show requester in embeds</span>
+              <div class="brass-mech-switch on" id="toggle-requester">
+                <div class="switch-knob"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <span class="toggle-text">Loop queue</span>
+              <div class="brass-mech-switch" id="toggle-loop">
+                <div class="switch-knob"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <button class="save-stamp-btn" id="save-btn">
+          <span class="stamped-title">SAVE</span>
+        </button>
+
+      </section>
+
+      <!-- RIGHT COLUMN: LIVE APPARATUS PROFILE -->
+      <section class="right-column">
+        <div class="preview-panel paper-sculpted-panel">
+          <h3 class="preview-title stamped-title">LIVE PROFILE</h3>
+          
+          <div class="preview-grid">
+            <div class="preview-item">
+              <span class="preview-item-label">SERVER IDENTIFIER</span>
+              <span class="preview-item-val">987654321098765432</span>
+            </div>
+
+            <div class="preview-item">
+              <span class="preview-item-label">DEFAULT VOLUME</span>
+              <span class="preview-item-val" id="prev-volume">50% (6 / 12 SEGMENTS)</span>
+            </div>
+
+            <div class="preview-item">
+              <span class="preview-item-label">DJ ROLE</span>
+              <span class="preview-item-val" id="prev-djrole" style="color: var(--brand-green);">@DJ</span>
+            </div>
+
+            <div class="preview-item">
+              <span class="preview-item-label">AUTO-JOIN VOICE</span>
+              <span class="preview-item-val" id="prev-autojoin" style="color: var(--soul-color);">ACTIVE</span>
+            </div>
+
+            <div class="preview-item">
+              <span class="preview-item-label">EMBED REQUESTER TAG</span>
+              <span class="preview-item-val" id="prev-requester" style="color: var(--soul-color);">ENABLED</span>
+            </div>
+
+            <div class="preview-item">
+              <span class="preview-item-label">QUEUE REPEAT MODE</span>
+              <span class="preview-item-val" id="prev-loop" style="color: var(--silvered);">DISABLED</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bottom-bar">
+      <div class="footer-left-tag">PARLOR CONFIGURATION COMPARTMENT</div>
+      <div class="footer-right-tag">MODERATOR ACCESS GRANTED</div>
+    </footer>
+
+  </div>
+
+  <!-- Interactive Control Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Volume Segment Stepper
+      const segments = document.querySelectorAll('.volume-segment');
+      const volumeVal = document.getElementById('volume-val');
+      const prevVolume = document.getElementById('prev-volume');
+
+      segments.forEach((seg, index) => {
+        seg.addEventListener('click', () => {
+          const filledCount = index + 1;
+          const pct = Math.round((filledCount / 12) * 100);
+          
+          segments.forEach((s, i) => {
+            if (i < filledCount) {
+              s.classList.add('filled');
+            } else {
+              s.classList.remove('filled');
+            }
+          });
+
+          volumeVal.textContent = `${pct}%`;
+          prevVolume.textContent = `${pct}% (${filledCount} / 12 SEGMENTS)`;
+        });
+      });
+
+      // DJ Role Input live reflection
+      const djRoleInput = document.getElementById('dj-role-input');
+      const prevDjRole = document.getElementById('prev-djrole');
+      if (djRoleInput && prevDjRole) {
+        djRoleInput.addEventListener('input', () => {
+          prevDjRole.textContent = djRoleInput.value || '@DJ';
+        });
+      }
+
+      // Mechanical Switch Toggles
+      const toggles = [
+        { el: document.getElementById('toggle-autojoin'), prev: document.getElementById('prev-autojoin'), activeText: 'ACTIVE', inactiveText: 'INACTIVE', activeColor: 'var(--soul-color)' },
+        { el: document.getElementById('toggle-requester'), prev: document.getElementById('prev-requester'), activeText: 'ENABLED', inactiveText: 'DISABLED', activeColor: 'var(--soul-color)' },
+        { el: document.getElementById('toggle-loop'), prev: document.getElementById('prev-loop'), activeText: 'ENABLED', inactiveText: 'DISABLED', activeColor: 'var(--soul-color)' }
+      ];
+
+      toggles.forEach(t => {
+        if (t.el) {
+          t.el.addEventListener('click', () => {
+            t.el.classList.toggle('on');
+            const isOn = t.el.classList.contains('on');
+            if (t.prev) {
+              t.prev.textContent = isOn ? t.activeText : t.inactiveText;
+              t.prev.style.color = isOn ? t.activeColor : 'var(--silvered)';
+            }
+          });
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

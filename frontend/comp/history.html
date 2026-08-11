@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0">
+  <title>Storaboga Sound — History</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       DEADLOCK FONT DEFINITIONS (LOCAL OTF FILES)
+       ============================================================ */
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Text Demo';
+      src: url('assets/fonts/retailtextdemo-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Text Demo';
+      src: url('assets/fonts/retailtextdemo-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    /* ============================================================
+       DECOMPILED DEADLOCK COLOR TOKENS & DESIGN SYSTEM
+       ============================================================ */
+    :root {
+      --off-black: #10130D;
+      --off-white: #FFEFD7;
+      --soul-color: #70F8C1;
+      --shard-color: #99FFD6;
+      --brand-green: #5FE69E;
+      --gold-color: #FFED79;
+      --spirit-color: #8A55B3;
+      --weapon-color: #E58A00;
+      --enemy-color: #FF410D;
+      --team1-neutral: #55503E;
+      --team2-color: #4D75C3;
+      --steam-blue: #1A9FFF;
+      --rank0-color: #333333;
+      --default-bg-1: #333333;
+      --default-bg-2: #404040;
+      --silvered: #C6C6C6;
+      --warm-backer: #564a48;
+      --card-shape-default: #575757;
+      --in-roster-wash: #c3dcd2;
+      --priority-amber: #ffc533;
+      --priority-mint: #92eac7;
+      --high-priority-mint: #33e59f;
+      --flux: var(--accent-dynamic, #70F8C1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background-color: var(--off-black);
+      font-family: 'Retail Demo', sans-serif;
+      color: var(--off-white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fixed Viewport Container (1920x1080) */
+    .dashboard-viewport {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-color: var(--off-black);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* Warm-toned Vignette Overlay */
+    .dashboard-viewport::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(16, 19, 13, 0.5) 85%, rgba(30, 20, 10, 0.3) 100%);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* Smoke Layer */
+    .smoke-bg-layer {
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/smoke_bg.png");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.35;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Radial Ambient Glow */
+    .ambient-glow-center {
+      position: absolute;
+      top: 20%;
+      left: 25%;
+      width: 900px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(112, 248, 193, 0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Header Bar */
+    .top-bar {
+      position: relative;
+      z-index: 10;
+      height: 72px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(ellipse at 50% 100%, rgba(40, 44, 34, 0.96) 0%, rgba(16, 19, 13, 0.99) 100%);
+      border-bottom: 1px solid rgba(255, 239, 215, 0.14);
+      box-shadow: inset rgba(0, 0, 0, 0.5) 0px -2px 16px 0px, 0 4px 20px rgba(0, 0, 0, 0.7);
+    }
+
+    .top-bar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-logo-crest {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba(112, 248, 193, 0.25) 0%, transparent 70%);
+      border: 1px solid var(--soul-color);
+      transform: rotate(45deg);
+    }
+
+    .brand-logo-inner {
+      width: 16px;
+      height: 16px;
+      background-color: var(--soul-color);
+    }
+
+    .brand-title {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .stamped-title {
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--off-white);
+      text-shadow: 0px 0px 0px 5px rgba(16,19,13,0.95), 2px 2px 0px 3px #10130D;
+      -webkit-mask-image: url("assets/masks/text_speckle_mask.png");
+      mask-image: url("assets/masks/text_speckle_mask.png");
+      -webkit-mask-size: cover;
+      mask-size: cover;
+    }
+
+    .im-fell-title {
+      font-family: 'IM Fell English SC', serif;
+      text-transform: uppercase;
+      color: var(--off-white);
+      text-shadow: 0px 0px 0px 5px rgba(16,19,13,0.95), 2px 2px 0px 3px #10130D;
+      -webkit-mask-image: url("assets/masks/text_speckle_mask.png");
+      mask-image: url("assets/masks/text_speckle_mask.png");
+      -webkit-mask-size: cover;
+      mask-size: cover;
+    }
+
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .nav-tab {
+      position: relative;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      color: var(--silvered);
+      background-color: #33322d;
+      -webkit-mask-image: url("assets/masks/button_mask_threshold.png");
+      mask-image: url("assets/masks/button_mask_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1), background-color 0.04s ease;
+    }
+
+    .nav-tab::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/button_paper_tile.png");
+      background-repeat: repeat;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .nav-tab:hover {
+      color: var(--off-white);
+      background-color: #48463f;
+      transform: scale(1.03);
+    }
+
+    .nav-tab.active {
+      color: var(--off-white);
+      background: linear-gradient(180deg, #33e59f 0%, #1f4f3c 100%);
+      text-shadow: 0px 0px 0px 5px rgba(16,19,13,0.95), 2px 2px 0px 3px #10130D;
+    }
+
+    .tab-active-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--soul-color);
+    }
+
+    /* User Profile Badge */
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .voice-status-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 19, 13, 0.85);
+      border: 1px solid rgba(95, 230, 158, 0.4);
+      padding: 6px 14px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand-green);
+    }
+
+    .voice-channel-name {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 12px;
+      color: var(--brand-green);
+      font-weight: 700;
+    }
+
+    .user-card-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(30, 32, 26, 0.8);
+      border: 1px solid rgba(255, 239, 215, 0.15);
+      padding: 5px 12px 5px 6px;
+    }
+
+    .user-avatar-frame {
+      width: 36px;
+      height: 36px;
+      background: var(--spirit-color);
+      border: 1.5px solid var(--soul-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      color: var(--off-white);
+      font-size: 16px;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-family: 'Retail Demo', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--off-white);
+      line-height: 1.1;
+    }
+
+    .admin-badge {
+      font-family: 'Retail Text Demo', monospace;
+      font-weight: 700;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--spirit-color);
+      background: rgba(138, 85, 179, 0.2);
+      border: 1px solid rgba(138, 85, 179, 0.4);
+      padding: 1px 5px;
+      margin-top: 2px;
+    }
+
+    /* MAIN CONTAINER: FULL-WIDTH LEDGER */
+    .main-container {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 32px 48px;
+      height: calc(1080px - 72px - 48px);
+      overflow: hidden;
+    }
+
+    .ledger-container {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: radial-gradient(circle at 50% 30%, rgba(36, 34, 32, 0.94) 0%, rgba(20, 19, 17, 0.97) 100%);
+      border: 1px solid rgba(255, 239, 215, 0.12);
+      box-shadow: inset rgba(0, 0, 0, 0.6) 0px 0px 32px 0px, 0px 8px 24px rgba(0, 0, 0, 0.7);
+      padding: 32px 40px;
+      overflow: hidden;
+    }
+
+    .ledger-container::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Watermark text behind list */
+    .watermark-bg {
+      position: absolute;
+      top: 140px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'IM Fell English SC', serif;
+      font-size: 130px;
+      letter-spacing: 0.2em;
+      color: var(--off-white);
+      opacity: 0.04;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 1;
+    }
+
+    /* Header Section */
+    .ledger-header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .ledger-title {
+      font-size: 34px;
+      letter-spacing: 0.08em;
+    }
+
+    .deco-divider {
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(229,138,0,0.3) 15%, rgba(255,237,121,0.75) 50%, rgba(229,138,0,0.3) 85%, transparent 100%);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      margin-top: 6px;
+    }
+
+    /* Horizontal Lines List (Lines on Paper - NO Cards) */
+    .ledger-list {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+
+    .ledger-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(229, 138, 0, 0.15);
+      transition: background-color 0.04s ease;
+    }
+
+    .ledger-row:nth-child(odd) {
+      background-color: rgba(20, 22, 17, 0.4);
+    }
+
+    .ledger-row:hover {
+      background-color: rgba(86, 74, 72, 0.3);
+    }
+
+    .ledger-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex: 1.5;
+    }
+
+    .ledger-index {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--team1-neutral);
+      width: 32px;
+    }
+
+    .ledger-track-title {
+      font-family: 'Reaver', serif;
+      font-size: 17px;
+      letter-spacing: 0.5px;
+    }
+
+    .ledger-center {
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .ledger-artist {
+      font-family: 'Retail Demo', sans-serif;
+      font-size: 14px;
+      color: var(--team1-neutral);
+    }
+
+    .ledger-right {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .ledger-time-ago {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--silvered);
+    }
+
+    .ledger-duration {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 13px;
+      color: var(--gold-color);
+      min-width: 48px;
+      text-align: right;
+    }
+
+    /* Footer Bar */
+    .bottom-bar {
+      position: relative;
+      z-index: 10;
+      height: 48px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(ellipse at 50% 0%, rgba(40, 44, 34, 0.96) 0%, rgba(16, 19, 13, 0.99) 100%);
+      border-top: 1px solid rgba(255, 239, 215, 0.14);
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 11px;
+      color: var(--silvered);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- FIXED VIEWPORT SHELL (1920x1080) -->
+  <div class="dashboard-viewport">
+
+    <div class="smoke-bg-layer"></div>
+    <div class="ambient-glow-center"></div>
+
+    <!-- HEADER BAR -->
+    <header class="top-bar">
+      <div class="brand-section">
+        <div class="brand-logo-crest">
+          <div class="brand-logo-inner"></div>
+        </div>
+        <h1 class="brand-title stamped-title">STORABOGA SOUND</h1>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <a href="dashboard.html" class="nav-tab">
+          <span>Now Playing</span>
+        </a>
+        <a href="history.html" class="nav-tab active">
+          <span class="tab-active-dot"></span>
+          <span>History</span>
+        </a>
+        <a href="status.html" class="nav-tab">
+          <span>Status</span>
+        </a>
+        <a href="settings.html" class="nav-tab">
+          <span>Settings</span>
+        </a>
+        <a href="admin.html" class="nav-tab">
+          <span>Admin</span>
+        </a>
+        <a href="login.html" class="nav-tab">
+          <span>Login with Discord</span>
+        </a>
+      </nav>
+
+      <!-- User Profile -->
+      <div class="user-profile">
+        <div class="voice-status-chip">
+          <span class="pulse-dot"></span>
+          <span class="voice-channel-name">#lounge</span>
+        </div>
+        <div class="user-card-badge">
+          <div class="user-avatar-frame">V</div>
+          <div class="user-info">
+            <span class="user-name">Vini</span>
+            <span class="admin-badge">ADMIN</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="main-container">
+      <section class="ledger-container">
+
+        <!-- Watermark -->
+        <div class="watermark-bg">SÉANCE LOG</div>
+
+        <!-- Ledger Header -->
+        <div class="ledger-header">
+          <h2 class="ledger-title im-fell-title">History</h2>
+          <div class="deco-divider"></div>
+        </div>
+
+        <!-- Horizontal Lines List -->
+        <div class="ledger-list">
+          
+          <!-- Row 1 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">01</span>
+              <span class="ledger-track-title stamped-title">Midnight City</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">M83</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">2 hours ago</span>
+              <span class="ledger-duration">4:03</span>
+            </div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">02</span>
+              <span class="ledger-track-title stamped-title">Nightcall</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">Kavinsky</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">3 hours ago</span>
+              <span class="ledger-duration">4:17</span>
+            </div>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">03</span>
+              <span class="ledger-track-title stamped-title">Electric Feel</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">MGMT</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">3 hours ago</span>
+              <span class="ledger-duration">3:49</span>
+            </div>
+          </div>
+
+          <!-- Row 4 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">04</span>
+              <span class="ledger-track-title stamped-title">Starboy</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">The Weeknd</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">4 hours ago</span>
+              <span class="ledger-duration">3:50</span>
+            </div>
+          </div>
+
+          <!-- Row 5 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">05</span>
+              <span class="ledger-track-title stamped-title">Pingipung</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">M83</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">4 hours ago</span>
+              <span class="ledger-duration">3:32</span>
+            </div>
+          </div>
+
+          <!-- Row 6 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">06</span>
+              <span class="ledger-track-title stamped-title">Around the World</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">Daft Punk</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">5 hours ago</span>
+              <span class="ledger-duration">7:09</span>
+            </div>
+          </div>
+
+          <!-- Row 7 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">07</span>
+              <span class="ledger-track-title stamped-title">Power</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">Kanye West</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">5 hours ago</span>
+              <span class="ledger-duration">4:57</span>
+            </div>
+          </div>
+
+          <!-- Row 8 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">08</span>
+              <span class="ledger-track-title stamped-title">Shelter</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">Porter Robinson & Madeon</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">6 hours ago</span>
+              <span class="ledger-duration">3:39</span>
+            </div>
+          </div>
+
+          <!-- Row 9 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">09</span>
+              <span class="ledger-track-title stamped-title">Runaway</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">Galantis</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">6 hours ago</span>
+              <span class="ledger-duration">3:47</span>
+            </div>
+          </div>
+
+          <!-- Row 10 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">10</span>
+              <span class="ledger-track-title stamped-title">Harbor Lights</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">Christopher Cross</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">7 hours ago</span>
+              <span class="ledger-duration">4:17</span>
+            </div>
+          </div>
+
+          <!-- Row 11 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">11</span>
+              <span class="ledger-track-title stamped-title">Synthetic Echoes</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">HOME</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">8 hours ago</span>
+              <span class="ledger-duration">3:32</span>
+            </div>
+          </div>
+
+          <!-- Row 12 -->
+          <div class="ledger-row">
+            <div class="ledger-left">
+              <span class="ledger-index">12</span>
+              <span class="ledger-track-title stamped-title">Eclipse Disco</span>
+            </div>
+            <div class="ledger-center">
+              <span class="ledger-artist">Daft Punk ft. Pharrell</span>
+            </div>
+            <div class="ledger-right">
+              <span class="ledger-time-ago">8 hours ago</span>
+              <span class="ledger-duration">4:08</span>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bottom-bar">
+      <div>STORABOGA SOUND AUDIO LEDGER · 12 ENTRIES RECORDED</div>
+      <div>RAW PCM • DISCORD OPUS</div>
+    </footer>
+
+  </div>
+
+</body>
+</html>

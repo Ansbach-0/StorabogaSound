@@ -1,0 +1,39 @@
+# Secrets
+.env
+
+# Database
+storaboga.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Audio temp downloads
+/tmp/storaboga_*
+
+# Build output
+web/static/
+frontend/dist/
+node_modules/
+dist/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Skill/agent scaffolding (local tooling, not deploy code)
+.claude/
+.gemini/
+
+# Design backup files
+*.bak.*
+*.bak
+
+# Design comps (reference only, not deployed as React is the real frontend)
+frontend/comp/*.png
+frontend/comp/*.bak.*

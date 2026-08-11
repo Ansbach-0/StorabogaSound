@@ -1,0 +1,475 @@
+/* ============================================================
+   Web component: item card with tier badges, active/imbue tags, compact/square variants
+   Source: /opt/data/research/deadlock-asset-repos/deadlock-ui/packages/core/src/components/dl-item-card/dl-item-card.css
+   ============================================================ */
+
+:host {
+    display: block;
+    position: relative;
+    width: 73px;
+    aspect-ratio: 82 / 128;
+    font-family: var(--dl-font-family);
+    color: var(--dl-text-primary);
+    line-height: 1.4;
+}
+
+:host(.custom-trigger),
+:host(.variant-auto-size) {
+    width: auto;
+    height: auto;
+    aspect-ratio: auto;
+    display: inline-block;
+}
+
+:host(.variant-square-size) {
+    width: var(--dl-item-icon-size, 48px);
+    height: var(--dl-item-icon-size, 48px);
+    aspect-ratio: 1 / 1;
+    display: inline-block;
+}
+
+.trigger {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+:host(.custom-trigger) .trigger,
+:host(.variant-auto-size) .trigger {
+    display: inline-block;
+    width: auto;
+    height: auto;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.mod-box {
+    aspect-ratio: 82 / 128;
+    border-radius: 5px;
+    box-sizing: border-box;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.15s ease;
+}
+
+.mod-box.clickable,
+.icon-box.clickable,
+.item-image-only.clickable,
+.item-image-name.clickable,
+.item-inline-trigger.clickable {
+    cursor: pointer;
+}
+
+:host([hover-effect="scale"]) .mod-box:hover {
+    transform: scale(1.15);
+    z-index: 10;
+}
+
+/* Loading skeleton */
+.mod-box.loading {
+    background: #1a1a2e;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
+}
+
+/* Card background texture */
+.card-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Icon area */
+.mod-icon-container {
+    align-items: center;
+    border-radius: 5px 5px 0 0;
+    display: flex;
+    aspect-ratio: 1 / 1;
+    flex: 0 0 64.0625%;
+    justify-content: center;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0px;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 3;
+}
+
+.mod-icon {
+    width: 100%;
+    height: 100%;
+    border-radius: 5px 5px 0 0;
+    object-fit: cover;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Tier number badge — visible only on hover */
+.tier-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 38%;
+    padding-top: 38%;
+    height: 0;
+    overflow: hidden;
+    z-index: 9;
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    user-select: none;
+}
+
+.mod-box:hover .tier-badge {
+    opacity: 1;
+}
+
+.tier-badge.weapon {
+    background-color: #cc8932;
+}
+.tier-badge.vitality {
+    background-color: #6dc04b;
+}
+.tier-badge.spirit {
+    background-color: #c878f0;
+}
+
+.tier-badge-number {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    font-size: 9px;
+    font-weight: 800;
+    color: #1a1510;
+    z-index: 10;
+    width: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.5px;
+}
+
+/* Active / Imbue tags */
+.active-tag {
+    position: absolute;
+    top: auto;
+    bottom: 33.8%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 6;
+    background-color: #181818;
+    color: rgba(255, 239, 215, 0.9);
+    font-size: 9px;
+    font-weight: 700;
+    min-width: 60%;
+    padding: 1px 3px;
+    text-align: center;
+    text-transform: uppercase;
+    border-radius: 2px;
+    letter-spacing: 0.5px;
+    user-select: none;
+}
+
+.imbue-tag {
+    position: absolute;
+    top: auto;
+    bottom: 35.9375%;
+    left: 0;
+    transform: none;
+    z-index: 6;
+    background-color: #5a3a8a;
+    color: #d4b8f0;
+    font-size: 8px;
+    font-weight: 600;
+    width: 100%;
+    padding: 1px 3px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 2px;
+    user-select: none;
+}
+
+/* Name label */
+.mod-name-container {
+    border-radius: 0 0 5px 5px;
+    flex: 0 0 35.9375%;
+    height: 35.9375%;
+    padding: 0 4%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 3;
+}
+
+.mod-name {
+    font-size: var(--dl-item-name-size, 13px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 0.88;
+    overflow-wrap: break-word;
+    white-space: normal;
+    color: #1a1510;
+    font-family: 'Retail Demo';
+    padding: 0 4px;
+}
+
+.mod-name.name-size-md {
+    font-size: 12px;
+}
+
+.mod-name.name-size-sm {
+    font-size: 11px;
+}
+
+.mod-name.name-size-xs {
+    font-size: 10px;
+}
+
+/* Dark tier name colors */
+.mod-box.tier-4 .mod-name.weapon,
+.mod-box.tier-5 .mod-name.weapon {
+    color: #e4c5a1;
+}
+.mod-box.tier-4 .mod-name.vitality,
+.mod-box.tier-5 .mod-name.vitality {
+    color: #c2e7cd;
+}
+.mod-box.tier-4 .mod-name.spirit,
+.mod-box.tier-5 .mod-name.spirit {
+    color: #e3d4f2;
+}
+
+/* Selection color by item type */
+.mod-box.weapon .mod-name::selection {
+    background-color: rgba(204, 137, 50, 0.4);
+}
+.mod-box.vitality .mod-name::selection {
+    background-color: rgba(109, 192, 75, 0.4);
+}
+.mod-box.spirit .mod-name::selection {
+    background-color: rgba(200, 120, 240, 0.4);
+}
+
+/* Icon variant — compact square */
+.icon-box {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    border-radius: var(--dl-item-icon-border-radius, 0);
+    overflow: hidden;
+    box-sizing: border-box;
+    transition: transform 0.15s ease;
+    cursor: default;
+}
+
+:host([hover-effect="scale"]) .icon-box:hover {
+    transform: scale(1.15);
+    z-index: 10;
+}
+
+.icon-image-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.icon-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.icon-box .tier-badge {
+    opacity: 1;
+    width: 45%;
+    padding-top: 45%;
+}
+
+.icon-box .tier-badge-number {
+    top: 1px;
+    right: 0;
+    font-size: 8px;
+    width: 10px;
+    text-align: center;
+    letter-spacing: 0;
+}
+
+.icon-box .active-tag,
+.icon-box .imbue-tag {
+    top: auto;
+    bottom: 2px;
+    font-size: 7px;
+    min-width: 0;
+    width: auto;
+    padding: 1px 4px;
+}
+
+.item-image-only {
+    cursor: default;
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.icon-box.loading,
+.item-image-only.loading,
+.item-image-name.loading,
+.item-inline-trigger.loading {
+    background-color: #1a1a2e;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.item-image-name.loading {
+    min-height: var(--dl-item-image-name-size, 68px);
+    min-width: var(--dl-item-image-name-loading-width, 160px);
+}
+
+.item-inline-trigger.loading {
+    min-height: var(--dl-item-inline-loading-height, 1em);
+    min-width: var(--dl-item-inline-loading-width, 6em);
+}
+
+.item-inline-trigger.loading.image-only {
+    min-height: var(--dl-item-inline-image-only-size, 1.45em);
+    min-width: var(--dl-item-inline-image-only-size, 1.45em);
+}
+
+.item-image-only-img {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.item-image-name,
+.item-inline-trigger {
+    --item-accent-color: var(--dl-item-accent-color, #8b9bae);
+    align-items: center;
+    color: var(--dl-item-name-color, var(--item-accent-color));
+    display: inline-flex;
+    font-family: var(--dl-font-family, 'Retail Demo', sans-serif);
+    font-weight: 700;
+}
+
+.item-image-name {
+    gap: var(--dl-item-image-name-gap, 10px);
+    line-height: 1.05;
+}
+
+.item-image-name.weapon,
+.item-inline-trigger.weapon { --item-accent-color: var(--dl-item-accent-color, #d99a3a); }
+.item-image-name.vitality,
+.item-inline-trigger.vitality { --item-accent-color: var(--dl-item-accent-color, #a9d84a); }
+.item-image-name.spirit,
+.item-inline-trigger.spirit { --item-accent-color: var(--dl-item-accent-color, #c878f0); }
+
+.item-image-name-img {
+    display: block;
+    height: var(--dl-item-image-name-size, 68px);
+    object-fit: cover;
+    width: var(--dl-item-image-name-size, 68px);
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.item-image-name-text {
+    color: inherit;
+    font-size: var(--dl-item-image-name-font-size, 18px);
+}
+
+.item-inline-trigger {
+    gap: var(--dl-item-inline-gap, 0.32em);
+    line-height: 1;
+    vertical-align: baseline;
+}
+
+.item-inline-trigger-img {
+    display: inline-block;
+    height: var(--dl-item-inline-image-size, 1.18em);
+    object-fit: cover;
+    width: var(--dl-item-inline-image-size, 1.18em);
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.item-inline-trigger.image-only .item-inline-trigger-img {
+    height: var(--dl-item-inline-image-only-size, 1.45em);
+    width: var(--dl-item-inline-image-only-size, 1.45em);
+}
+
+.item-inline-trigger-name {
+    color: inherit;
+    font-size: var(--dl-item-inline-font-size, 1em);
+}
+
+.icon-box.error,
+.item-image-only.error,
+.item-image-name.error,
+.item-inline-trigger.error {
+    align-items: center;
+    background-color: #2a1720;
+    border: 1px solid rgba(255, 128, 128, 0.5);
+    color: #ffb8b8;
+    display: inline-flex;
+    font-family: var(--dl-font-family, sans-serif);
+    font-weight: 700;
+    justify-content: center;
+}
+
+.icon-box.error,
+.item-image-only.error {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.item-error-glyph {
+    font-size: 0.9em;
+    line-height: 1;
+}
+
+/* Tooltip positioning — managed by Floating UI */
+.tooltip-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: max-content;
+    z-index: 1000;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.tooltip-wrapper.open {
+    visibility: visible;
+    pointer-events: auto;
+}

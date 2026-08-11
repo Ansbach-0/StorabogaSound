@@ -1,0 +1,2081 @@
+<!-- QUEUE API EXTENSIONS (proposed, pending SPEC approval):
+     POST   /api/queue/{track_id}/move   { new_position: number }  — reorder queue
+     DELETE /api/queue/{track_id}                                  — remove track from queue  
+     POST   /api/queue/{track_id}/play                             — jump to track (skip to this one)
+     DELETE /api/queue                                             — clear entire queue
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0">
+  <title>Storaboga Sound — Discord Audio Dashboard</title>
+  <style>
+    /* ============================================================
+       DEADLOCK FONT DEFINITIONS (LOCAL OTF FILES ONLY)
+       ============================================================ */
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Text Demo';
+      src: url('assets/fonts/retailtextdemo-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Text Demo';
+      src: url('assets/fonts/retailtextdemo-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    /* ============================================================
+       DECOMPILED DEADLOCK COLOR TOKENS & DESIGN SYSTEM
+       ============================================================ */
+    :root {
+      --off-black: #10130D;       /* Warm green-tinted black background */
+      --off-white: #FFEFD7;       /* Primary text — warm cream dossier paper */
+      --soul-color: #70F8C1;      /* Active/now-playing glow — ectoplasmic mint */
+      --shard-color: #99FFD6;     /* Brighter mint for selected items */
+      --brand-green: #5FE69E;    /* Active channel / status indicator */
+      --gold-color: #FFED79;      /* Progress accent / gold indicators */
+      --spirit-color: #8A55B3;    /* Deep purple accent */
+      --weapon-color: #E58A00;    /* Warm amber / identity tags */
+      --enemy-color: #FF410D;     /* Destructive / stop / leave voice */
+      --team1-neutral: #55503E;   /* Muted secondary warm text */
+      --team2-color: #4D75C3;     /* Selection accent */
+      --steam-blue: #1A9FFF;      /* Link / info badge */
+      --rank0-color: #333333;     /* Base panel background */
+      --default-bg-1: #333333;    /* Panel tier 1 */
+      --default-bg-2: #404040;    /* Panel tier 2 */
+      --silvered: #C6C6C6;        /* Muted grey — inactive labels */
+      --warm-backer: #564a48;     /* Warm brown backer tint */
+      --card-shape-default: #575757;
+      --in-roster-wash: #c3dcd2;
+      --priority-amber: #ffc533;
+      --priority-mint: #92eac7;
+      --high-priority-mint: #33e59f;
+      --flux: var(--accent-dynamic, #70F8C1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background-color: var(--off-black);
+      font-family: 'Retail Demo', sans-serif;
+      color: var(--off-white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fixed Viewport Container (1920x1080) */
+    .dashboard-viewport {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-color: var(--off-black);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* Refinement 7: Warm-toned Vignette Overlay */
+    .dashboard-viewport::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(16, 19, 13, 0.5) 85%, rgba(30, 20, 10, 0.3) 100%);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* Smoke Background Layer */
+    .smoke-bg-layer {
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/smoke_bg.png");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.35;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Ambient Radial Glow Halos */
+    .ambient-glow-left {
+      position: absolute;
+      top: 15%;
+      left: 10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(112, 248, 193, 0.08) 0%, rgba(86, 143, 120, 0.02) 60%, transparent 80%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .ambient-glow-right {
+      position: absolute;
+      bottom: 10%;
+      right: 5%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(230, 198, 148, 0.09) 0%, rgba(146, 112, 60, 0.02) 60%, transparent 80%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Refinement 3: Radial Gradient Panels */
+    .paper-sculpted-panel {
+      position: relative;
+      background: radial-gradient(circle at 50% 30%, rgba(44, 42, 40, 0.92) 0%, rgba(24, 23, 22, 0.95) 100%);
+      border: 1px solid rgba(255, 239, 215, 0.12);
+      box-shadow: inset rgba(0, 0, 0, 0.6) 0px 0px 32px 0px, 0px 8px 24px rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+    }
+
+    .paper-sculpted-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Refinement 4: Text Speckle Treatment for Display Headers */
+    .stamped-title {
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--off-white);
+      text-shadow: 0px 0px 0px 5px rgba(16,19,13,0.95), 2px 2px 0px 3px #10130D;
+      -webkit-mask-image: url("assets/masks/text_speckle_mask.png");
+      mask-image: url("assets/masks/text_speckle_mask.png");
+      -webkit-mask-size: cover;
+      mask-size: cover;
+      -webkit-mask-composite: source-over;
+      mask-composite: add;
+    }
+
+    /* ============================================================
+       TOP HEADER BAR
+       ============================================================ */
+    .top-bar {
+      position: relative;
+      z-index: 10;
+      height: 72px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(ellipse at 50% 100%, rgba(40, 44, 34, 0.96) 0%, rgba(16, 19, 13, 0.99) 100%);
+      border-bottom: 1px solid rgba(255, 239, 215, 0.14);
+      box-shadow: inset rgba(0, 0, 0, 0.5) 0px -2px 16px 0px, 0 4px 20px rgba(0, 0, 0, 0.7);
+    }
+
+    .top-bar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-logo-crest {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba(112, 248, 193, 0.25) 0%, transparent 70%);
+      border: 1px solid var(--soul-color);
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1);
+      transform: rotate(45deg);
+    }
+
+    .brand-logo-inner {
+      width: 16px;
+      height: 16px;
+      background-color: var(--soul-color);
+      transform: rotate(0deg);
+    }
+
+    .brand-title-box {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .brand-subtitle {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 10px;
+      letter-spacing: 1.8px;
+      color: var(--brand-green);
+      margin-top: 4px;
+    }
+
+    /* Masked Tactile Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .nav-tab {
+      position: relative;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      color: var(--silvered);
+      background-color: #33322d;
+      -webkit-mask-image: url("assets/masks/button_mask_threshold.png");
+      mask-image: url("assets/masks/button_mask_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      cursor: pointer;
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1), background-color 0.04s ease, color 0.04s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+    }
+
+    .nav-tab::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/button_paper_tile.png");
+      background-repeat: repeat;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .nav-tab:hover {
+      color: var(--off-white);
+      background-color: #48463f;
+      transform: scale(1.03);
+    }
+
+    .nav-tab:active {
+      transform: translateY(2px) scale(0.97);
+    }
+
+    .nav-tab.active {
+      color: var(--off-white);
+      background: linear-gradient(180deg, #33e59f 0%, #1f4f3c 100%);
+      text-shadow: 0px 0px 0px 5px rgba(16,19,13,0.95), 2px 2px 0px 3px #10130D;
+      box-shadow: inset 0 -2px 0 0 var(--soul-color), inset 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .tab-active-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--soul-color);
+      box-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+    }
+
+    /* User Profile & Channel Badge */
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .voice-status-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 19, 13, 0.85);
+      border: 1px solid rgba(95, 230, 158, 0.4);
+      padding: 6px 14px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand-green);
+      box-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .voice-channel-name {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 12px;
+      color: var(--brand-green);
+      font-weight: 700;
+    }
+
+    .user-card-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(30, 32, 26, 0.8);
+      border: 1px solid rgba(255, 239, 215, 0.15);
+      padding: 5px 12px 5px 6px;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
+    }
+
+    .user-avatar-frame {
+      width: 36px;
+      height: 36px;
+      background: var(--spirit-color);
+      border: 1.5px solid var(--soul-color);
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      color: var(--off-white);
+      font-size: 16px;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-family: 'Retail Demo', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--off-white);
+      line-height: 1.1;
+    }
+
+    .admin-badge {
+      font-family: 'Retail Text Demo', monospace;
+      font-weight: 700;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--spirit-color);
+      background: rgba(138, 85, 179, 0.2);
+      border: 1px solid rgba(138, 85, 179, 0.4);
+      padding: 1px 5px;
+      margin-top: 2px;
+      width: fit-content;
+    }
+
+    /* ============================================================
+       MAIN CONTENT CONTAINER (TWO COLUMN ASYMMETRIC LAYOUT)
+       ============================================================ */
+    .main-container {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      gap: 24px;
+      padding: 24px 32px;
+      height: calc(1080px - 72px - 56px);
+      overflow: hidden;
+    }
+
+    /* ============================================================
+       LEFT COLUMN — TRACK ROSTER & LIBRARY GRID
+       ============================================================ */
+    .left-column {
+      flex: 1.25;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      height: 100%;
+      min-width: 0;
+    }
+
+    .section-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: radial-gradient(circle at 30% 40%, rgba(38, 40, 33, 0.92) 0%, rgba(18, 20, 15, 0.96) 100%);
+      border-bottom: 1px solid rgba(255, 239, 215, 0.1);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+
+    .section-title {
+      font-size: 20px;
+    }
+
+    .section-meta-count {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      color: var(--team1-neutral);
+    }
+
+    /* Filter Action Tabs */
+    .filter-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-btn {
+      position: relative;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      color: var(--silvered);
+      background-color: #2b2a26;
+      -webkit-mask-image: url("assets/masks/button_mask_threshold.png");
+      mask-image: url("assets/masks/button_mask_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1), background-color 0.04s ease;
+    }
+
+    .filter-btn:hover {
+      color: var(--off-white);
+      background-color: #3d3b35;
+      transform: scale(1.04);
+    }
+
+    .filter-btn.active {
+      color: var(--off-white);
+      background-color: var(--warm-backer);
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
+    }
+
+    /* Track Cards Grid (2 rows of 5 cards) */
+    .roster-grid-wrapper {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .roster-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      justify-items: center;
+      align-items: center;
+    }
+
+    /* Refinement 2: Deadlock Hard Flat Shadows & Refinement 8: Halftone Dot Texture */
+    .dl-card {
+      position: relative;
+      width: 172px;
+      height: 270px;
+      cursor: pointer;
+      box-shadow: 0px 0px 32px 0px rgba(0,0,0,0.5), inset 0 2px 6px rgba(0,0,0,0.5);
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1), box-shadow 0.04s ease, filter 0.04s ease;
+    }
+
+    .dl-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(146, 112, 60, 0.06) 1px, transparent 1.5px);
+      background-size: 4px 4px;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.5;
+    }
+
+    /* Refinement 10: Now-Playing Breathing Animation (The ONE authored glow moment) */
+    @keyframes breathNowPlaying {
+      0%, 100% { box-shadow: 0px 0px 32px 0px rgba(0,0,0,0.5), 0 0 12px rgba(112, 248, 193, 0.2); }
+      50% { box-shadow: 0px 0px 40px 0px rgba(0,0,0,0.5), 0 0 24px rgba(112, 248, 193, 0.35); }
+    }
+
+    .dl-card.state-now-playing {
+      animation: breathNowPlaying 4s infinite ease-in-out;
+    }
+
+    /* Hover Shadow Intensification (Flat elevation shadows only) */
+    .dl-card:hover {
+      transform: scale(1.07) translateY(-4px) rotate(0deg) !important;
+      z-index: 25;
+      box-shadow: 0px 12px 36px 0px rgba(0,0,0,0.85), inset 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    /* Refinement 5: Varied Card Sizes & Rotations */
+    .dl-card:nth-child(1) { width: 180px; height: 280px; transform: rotate(0deg); }
+    .dl-card:nth-child(2) { transform: rotate(-0.4deg); }
+    .dl-card:nth-child(3) { transform: rotate(0.3deg); }
+    .dl-card:nth-child(4) { transform: rotate(-0.2deg); }
+    .dl-card:nth-child(5) { width: 165px; height: 260px; transform: rotate(0.5deg); }
+    .dl-card:nth-child(6) { transform: rotate(-0.5deg); }
+    .dl-card:nth-child(7) { width: 165px; height: 260px; transform: rotate(0.2deg); }
+    .dl-card:nth-child(8) { transform: rotate(-0.3deg); }
+    .dl-card:nth-child(9) { width: 165px; height: 260px; transform: rotate(0.4deg); }
+    .dl-card:nth-child(10) { transform: rotate(-0.1deg); }
+
+    /* Masked Card Backer Fill */
+    .card-backer-fill {
+      position: absolute;
+      inset: 0;
+      -webkit-mask-image: url("assets/images/card_backer.png");
+      mask-image: url("assets/images/card_backer.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      background-color: var(--card-shape-default); /* #575757 */
+      overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    }
+
+    .card-paper-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.25;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+
+    /* Card Border Frame Overlay */
+    .card-border-frame {
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/images/card_border.png");
+      background-size: 100% 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Contextual Wash Palette System for Card States */
+    .dl-card.state-now-playing .card-backer-fill {
+      background: radial-gradient(circle at 50% 30%, #9AFFD6 0%, #33e59f 50%, #1f4f3c 100%);
+    }
+
+    .dl-card.state-queued .card-backer-fill {
+      background: radial-gradient(circle at 50% 30%, #FFED79 0%, #ffc533 55%, #664911 100%);
+    }
+
+    .dl-card.state-selected .card-backer-fill {
+      background: radial-gradient(circle at 50% 30%, #e0f2eb 0%, #c3dcd2 55%, #3c544b 100%);
+    }
+
+    .dl-card.state-favorite .card-backer-fill {
+      background: radial-gradient(circle at 50% 30%, #b886e0 0%, #8A55B3 55%, #3a1d52 100%);
+    }
+
+    .dl-card.state-default .card-backer-fill {
+      background: radial-gradient(circle at 50% 30%, #787878 0%, #575757 60%, #292929 100%);
+    }
+
+    /* Album Art Box inside Card */
+    .card-art-container {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      height: 155px;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(0,0,0,0.6);
+      background-color: #10130D;
+    }
+
+    .card-art-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(0.55) contrast(1.1) brightness(0.72);
+      transition: filter 0.04s ease, transform 0.04s ease;
+    }
+
+    .dl-card:hover .card-art-img {
+      filter: grayscale(0) contrast(1) brightness(1.1);
+      transform: scale(1.06);
+    }
+
+    /* Card Badge Tag (Stutter Rotate) */
+    .card-tag-badge {
+      position: absolute;
+      top: 14px;
+      left: 12px;
+      z-index: 15;
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 3px 7px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.7);
+    }
+
+    .card-tag-badge.badge-now-playing {
+      background-color: var(--high-priority-mint);
+      color: var(--off-black);
+    }
+
+    .card-tag-badge.badge-queue {
+      background-color: var(--priority-amber);
+      color: var(--off-black);
+    }
+
+    .card-tag-badge.badge-fav {
+      background-color: var(--spirit-color);
+      color: var(--off-white);
+    }
+
+    .stutter-badge {
+      animation: stutterBadgeRotate 5s steps(4, end) infinite;
+    }
+
+    @keyframes stutterBadgeRotate {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(-1.8deg); }
+      50% { transform: rotate(1.2deg); }
+      75% { transform: rotate(-0.6deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    /* Card Content Info Footer */
+    .card-info-box {
+      position: absolute;
+      bottom: 8px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      z-index: 12;
+    }
+
+    .card-song-title {
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 1.15;
+      color: var(--off-white);
+      text-shadow: 0px 0px 0px 3px rgba(16,19,13,0.95), 1.5px 1.5px 0px 2px #10130D;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-artist-name {
+      font-family: 'Retail Demo', sans-serif;
+      font-size: 11px;
+      color: rgba(255, 239, 215, 0.8);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+      padding-top: 3px;
+      border-top: 1px solid rgba(255, 239, 215, 0.15);
+    }
+
+    .card-duration {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 10px;
+      color: var(--brand-green);
+    }
+
+    /* Audio Equalizer & Dossier Bottom Panel */
+    .dossier-status-panel {
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(circle at 70% 50%, rgba(34, 36, 29, 0.95) 0%, rgba(14, 16, 11, 0.98) 100%);
+    }
+
+    .dossier-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .eq-visualizer-box {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 22px;
+      padding: 0 4px;
+    }
+
+    /* EQ visualizer removed — was flagged for bounce-easing + redundant with progress bar */
+
+    .dossier-info-text {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 11px;
+      color: var(--silvered);
+    }
+
+    .dossier-right-stats {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 11px;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--gold-color);
+    }
+
+    /* ============================================================
+       RIGHT COLUMN — NOW PLAYING SPOTLIGHT & CONTROLS + QUEUE
+       ============================================================ */
+    .right-column {
+      width: 580px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      height: 100%;
+      flex-shrink: 0;
+    }
+
+    /* Now Playing Spotlight Box */
+    .spotlight-card {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: radial-gradient(circle at 40% 25%, rgba(48, 45, 42, 0.94) 0%, rgba(22, 21, 20, 0.96) 100%);
+    }
+
+    .spotlight-top-row {
+      display: flex;
+      gap: 22px;
+    }
+
+    .spotlight-art-wrapper {
+      position: relative;
+      width: 190px;
+      height: 190px;
+      flex-shrink: 0;
+    }
+
+    /* Album Halo Drifting Animation */
+    .art-halo-drift {
+      position: absolute;
+      inset: -20px;
+      background: radial-gradient(circle, rgba(112, 248, 193, 0.4) 0%, rgba(86, 143, 120, 0.15) 55%, transparent 75%);
+      animation: haloDrift 7s infinite alternate ease-in-out;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes haloDrift {
+      0% { transform: translate(-8px, -8px) scale(0.96); opacity: 0.6; }
+      100% { transform: translate(8px, 8px) scale(1.06); opacity: 0.95; }
+    }
+
+    .spotlight-art-box {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      border: 2px solid var(--soul-color);
+      box-shadow: 0px 4px 16px rgba(0,0,0,0.6), inset 0 0 15px rgba(0,0,0,0.8);
+      overflow: hidden;
+      background-color: #10130D;
+    }
+
+    .spotlight-art-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .spotlight-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .spotlight-tag-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .spotlight-badge {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: var(--off-black);
+      background-color: var(--high-priority-mint);
+      padding: 3px 8px;
+      text-transform: uppercase;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.5);
+    }
+
+    .spotlight-title {
+      font-size: 28px;
+      line-height: 1.1;
+      color: var(--off-white);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .spotlight-artist {
+      font-family: 'Retail Demo', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--soul-color);
+    }
+
+    .spotlight-album {
+      font-family: 'Retail Demo', sans-serif;
+      font-size: 12px;
+      color: var(--team1-neutral);
+      margin-bottom: 6px;
+    }
+
+    .spotlight-genre-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .genre-chip {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--off-white);
+      background: rgba(51, 51, 51, 0.6);
+      border: 1px solid rgba(255, 239, 215, 0.15);
+      padding: 3px 8px;
+      text-transform: uppercase;
+    }
+
+    /* Refinement 6: 12-Segment Progress Bar */
+    .progress-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .progress-labels {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 11px;
+    }
+
+    .progress-title-label {
+      letter-spacing: 1.2px;
+      color: var(--silvered);
+    }
+
+    .progress-time-display {
+      font-weight: 700;
+      color: var(--gold-color);
+    }
+
+    .threshold-progress-track {
+      position: relative;
+      width: 100%;
+      height: 28px;
+      background-color: rgba(16, 19, 13, 0.95);
+      border: 1px solid rgba(255, 239, 215, 0.18);
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.9);
+      padding: 3px;
+      display: flex;
+      gap: 2px;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .progress-segment {
+      flex: 1;
+      height: 100%;
+      background-color: #2e281c;
+      border: 1px solid rgba(92, 74, 42, 0.4);
+      -webkit-mask-image: url("assets/masks/progress_bar_threshold.png");
+      mask-image: url("assets/masks/progress_bar_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      transition: background-color 0.04s ease, box-shadow 0.04s ease;
+    }
+
+    .progress-segment.active {
+      background: linear-gradient(180deg, #70F8C1 0%, #33e59f 60%, #1f4f3c 100%);
+      border-color: rgba(112, 248, 193, 0.6);
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.5);
+    }
+
+    /* Tactile Playback Control Buttons */
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .tactile-btn {
+      position: relative;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--off-white);
+      background-color: #383731;
+      -webkit-mask-image: url("assets/masks/button_mask_threshold.png");
+      mask-image: url("assets/masks/button_mask_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      cursor: pointer;
+      border: none;
+      padding: 12px 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1), background-color 0.04s ease, filter 0.04s ease;
+    }
+
+    .tactile-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/button_paper_tile.png");
+      background-repeat: repeat;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .tactile-btn:hover {
+      transform: scale(1.04);
+      filter: brightness(1.2);
+    }
+
+    .tactile-btn:active {
+      transform: translateY(2px) scale(0.97);
+      filter: brightness(0.9);
+    }
+
+    .btn-primary-highlight {
+      flex: 1.4;
+      padding: 14px 24px;
+      font-size: 15px;
+      color: var(--off-black);
+      background: radial-gradient(circle, #9AFFD6 0%, #33e59f 100%);
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.5);
+      text-shadow: none !important;
+    }
+
+    .btn-destructive {
+      background-color: rgba(255, 65, 13, 0.25);
+      border: 1px solid rgba(255, 65, 13, 0.4);
+      color: #ff7b5a;
+    }
+
+    .btn-destructive:hover {
+      background-color: rgba(255, 65, 13, 0.45);
+      color: #ffffff;
+    }
+
+    .connection-row {
+      display: flex;
+      align-items: center;
+      justify-content: stretch;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 237, 121, 0.15);
+    }
+
+    .connection-row .btn-leave {
+      flex: 1;
+      padding: 10px 16px;
+    }
+
+    .speckle-label {
+      position: relative;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      -webkit-mask-image: url("assets/masks/text_speckle_mask.png");
+      mask-image: url("assets/masks/text_speckle_mask.png");
+      -webkit-mask-size: cover;
+      mask-size: cover;
+    }
+
+    /* ============================================================
+       UPCOMING TRACK QUEUE PANEL
+       ============================================================ */
+    .queue-card {
+      flex: 1;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .queue-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 239, 215, 0.12);
+    }
+
+    .queue-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .queue-clear-btn {
+      position: relative;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--off-white);
+      background-color: rgba(255, 65, 13, 0.2);
+      border: 1px solid rgba(255, 65, 13, 0.4);
+      -webkit-mask-image: url("assets/masks/button_mask_threshold.png");
+      mask-image: url("assets/masks/button_mask_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      cursor: pointer;
+      padding: 4px 10px;
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1), background-color 0.04s ease, color 0.04s ease;
+    }
+
+    .queue-clear-btn:hover {
+      background-color: rgba(255, 65, 13, 0.45);
+      color: #ffffff;
+      transform: scale(1.05);
+    }
+
+    .queue-title {
+      font-size: 18px;
+    }
+
+    .queue-count-badge {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 11px;
+      color: var(--priority-amber);
+    }
+
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 4px;
+    }
+
+    .queue-item-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: radial-gradient(circle at 50% 50%, rgba(45, 48, 38, 0.75) 0%, rgba(25, 27, 21, 0.85) 100%);
+      border: 1px solid rgba(255, 239, 215, 0.08);
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1), background-color 0.04s ease;
+      cursor: pointer;
+    }
+
+    .queue-item-row::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .queue-item-row:hover {
+      transform: scale(1.015) translateX(4px);
+      background: radial-gradient(circle at 50% 50%, rgba(55, 60, 48, 0.9) 0%, rgba(32, 35, 28, 0.95) 100%);
+      border-color: rgba(255, 239, 215, 0.25);
+    }
+
+    .queue-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .queue-drag-handle {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 14px;
+      color: var(--team1-neutral);
+      cursor: grab;
+      padding: 0 4px;
+      user-select: none;
+      transition: color 0.04s ease;
+    }
+
+    .queue-drag-handle:hover {
+      color: var(--gold-color);
+    }
+
+    .queue-drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .queue-index-badge {
+      font-family: 'Retail Text Demo', monospace;
+      font-weight: 700;
+      font-size: 11px;
+      color: var(--off-black);
+      background-color: var(--priority-amber);
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .queue-art-mini {
+      width: 36px;
+      height: 36px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 239, 215, 0.2);
+    }
+
+    .queue-track-meta {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .queue-track-name {
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--off-white);
+      text-shadow: 0px 0px 0px 3px rgba(16,19,13,0.95), 1px 1px 0px 2px #10130D;
+    }
+
+    .queue-artist-name {
+      font-family: 'Retail Demo', sans-serif;
+      font-size: 11px;
+      color: var(--team1-neutral);
+    }
+
+    .queue-item-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .queue-duration {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 11px;
+      color: var(--gold-color);
+    }
+
+    .queue-play-btn {
+      color: rgba(255, 239, 215, 0.4);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.04s ease, transform 0.04s ease;
+    }
+
+    .queue-play-btn:hover {
+      color: var(--soul-color);
+      transform: scale(1.2);
+    }
+
+    .queue-remove-btn {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 14px;
+      color: rgba(255, 239, 215, 0.4);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.04s ease, transform 0.04s ease;
+    }
+
+    .queue-remove-btn:hover {
+      color: var(--enemy-color);
+      transform: scale(1.2);
+    }
+
+    /* ============================================================
+       BOTTOM FOOTER BAR
+       ============================================================ */
+    .bottom-bar {
+      position: relative;
+      z-index: 10;
+      height: 56px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(ellipse at 50% 0%, rgba(35, 38, 28, 0.98) 0%, rgba(14, 16, 11, 0.99) 100%);
+      border-top: 1px solid rgba(255, 239, 215, 0.14);
+      box-shadow: inset rgba(0, 0, 0, 0.5) 0px 2px 16px 0px, 0 -4px 20px rgba(0, 0, 0, 0.7);
+    }
+
+    .bottom-bar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .footer-channel-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .footer-channel-title {
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--off-white);
+      line-height: 1;
+    }
+
+    .footer-channel-subtitle {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 10px;
+      color: var(--brand-green);
+      margin-top: 2px;
+    }
+
+    .footer-center-engine {
+      position: relative;
+      z-index: 2;
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: var(--silvered);
+      background: rgba(30, 32, 26, 0.8);
+      border: 1px solid rgba(255, 239, 215, 0.1);
+      padding: 6px 16px;
+    }
+
+    /* Single Masked Threshold Volume Bar (No N flex divs) */
+    .footer-volume-control {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .volume-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-color);
+    }
+
+    .volume-label {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 11px;
+      color: var(--off-white);
+      font-weight: 700;
+      width: 82px;
+    }
+
+    .threshold-volume-track {
+      position: relative;
+      width: 150px;
+      height: 18px;
+      background-color: rgba(16, 19, 13, 0.95);
+      border: 1px solid rgba(255, 239, 215, 0.18);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
+      -webkit-mask-image: url("assets/masks/slider_fill_mask.png");
+      mask-image: url("assets/masks/slider_fill_mask.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      cursor: pointer;
+    }
+
+    .threshold-volume-fill {
+      height: 100%;
+      width: 100%;
+      transform-origin: left center;
+      transform: scaleX(0.65);
+      background: linear-gradient(90deg, #E58A00 0%, #FFED79 100%);
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.5);
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- FIXED VIEWPORT SHELL (1920x1080) -->
+  <div class="dashboard-viewport">
+
+    <!-- Atmospheric Smoke Background Backdrop -->
+    <div class="smoke-bg-layer"></div>
+    <div class="ambient-glow-left"></div>
+    <div class="ambient-glow-right"></div>
+
+    <!-- ============================================================
+         TOP HEADER BAR
+         ============================================================ -->
+    <header class="top-bar">
+      <div class="brand-section">
+        <div class="brand-logo-crest">
+          <div class="brand-logo-inner"></div>
+        </div>
+        <div class="brand-title-box">
+          <h1 class="brand-title stamped-title">STORABOGA SOUND</h1>
+        </div>
+      </div>
+
+      <!-- Masked Navigation Tabs -->
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="now-playing">
+          <span class="tab-active-dot"></span>
+          <span>Now Playing</span>
+        </button>
+        <button class="nav-tab" data-tab="queue">
+          <span>Queue</span>
+        </button>
+        <button class="nav-tab" data-tab="history">
+          <span>History</span>
+        </button>
+        <button class="nav-tab" data-tab="status">
+          <span>Status</span>
+        </button>
+        <button class="nav-tab" data-tab="settings">
+          <span>Settings</span>
+        </button>
+        <button class="nav-tab" data-tab="admin">
+          <span>Login with Discord</span>
+        </button>
+      </nav>
+
+      <!-- Connected User Badge -->
+      <div class="user-profile">
+        <div class="user-card-badge">
+          <div class="user-avatar-frame">V</div>
+          <div class="user-info">
+            <span class="user-name">Vini</span>
+            <span class="admin-badge">ADMIN</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         MAIN CONTENT AREA (ASYMMETRIC TWO COLUMN)
+         ============================================================ -->
+    <main class="main-container">
+
+      <!-- LEFT COLUMN: TRACK ROSTER & LIBRARY -->
+      <section class="left-column paper-sculpted-panel">
+        
+        <div class="section-header-bar">
+          <div class="header-left">
+            <h2 class="section-title stamped-title">Track Roster & Library</h2>
+          </div>
+          <div class="filter-tabs">
+            <button class="filter-btn active">All Tracks</button>
+            <button class="filter-btn">Queued (3)</button>
+            <button class="filter-btn">Favorites</button>
+            <button class="filter-btn">Recent</button>
+          </div>
+        </div>
+
+        <!-- Roster Grid with Masked Deadlock Cards -->
+        <div class="roster-grid-wrapper">
+          <div class="roster-grid">
+
+            <!-- Card 1: Now Playing (Midnight City) -->
+            <div class="dl-card state-now-playing" data-track-id="1">
+              <div class="card-backer-fill">
+                <div class="card-paper-overlay"></div>
+              </div>
+              <div class="card-border-frame"></div>
+              <div class="card-art-container">
+                <img src="assets/images/midnight_city_cover.jpg" alt="Midnight City" class="card-art-img">
+              </div>
+              <div class="card-info-box">
+                <h3 class="card-song-title stamped-title">Midnight City</h3>
+                <span class="card-artist-name">M83</span>
+                <div class="card-meta-row">
+                  <span class="card-duration">04:03</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Queued [01] (Strobe) -->
+            <div class="dl-card state-queued" data-track-id="2">
+              <div class="card-backer-fill">
+                <div class="card-paper-overlay"></div>
+              </div>
+              <div class="card-border-frame"></div>
+              <span class="card-tag-badge badge-queue stutter-badge">1</span>
+              <div class="card-art-container">
+                <img src="assets/images/strobe_cover.jpg" alt="Strobe" class="card-art-img">
+              </div>
+              <div class="card-info-box">
+                <h3 class="card-song-title stamped-title">Strobe</h3>
+                <span class="card-artist-name">deadmau5</span>
+                <div class="card-meta-row">
+                  <span class="card-duration">06:48</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Queued [02] (Electric Feel) -->
+            <div class="dl-card state-queued" data-track-id="3">
+              <div class="card-backer-fill">
+                <div class="card-paper-overlay"></div>
+              </div>
+              <div class="card-border-frame"></div>
+              <span class="card-tag-badge badge-queue stutter-badge">2</span>
+              <div class="card-art-container">
+                <img src="assets/images/electric_feel_cover.jpg" alt="Electric Feel" class="card-art-img">
+              </div>
+              <div class="card-info-box">
+                <h3 class="card-song-title stamped-title">Electric Feel</h3>
+                <span class="card-artist-name">MGMT</span>
+                <div class="card-meta-row">
+                  <span class="card-duration">03:49</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 4: Queued [03] (Sailing) -->
+            <div class="dl-card state-queued" data-track-id="4">
+              <div class="card-backer-fill">
+                <div class="card-paper-overlay"></div>
+              </div>
+              <div class="card-border-frame"></div>
+              <span class="card-tag-badge badge-queue stutter-badge">3</span>
+              <div class="card-art-container">
+                <img src="assets/images/sailing_cover.jpg" alt="Sailing" class="card-art-img">
+              </div>
+              <div class="card-info-box">
+                <h3 class="card-song-title stamped-title">Sailing</h3>
+                <span class="card-artist-name">Christopher Cross</span>
+                <div class="card-meta-row">
+                  <span class="card-duration">04:17</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 5: In Roster / Selected (Get Lucky) -->
+            <div class="dl-card state-selected" data-track-id="5">
+              <div class="card-backer-fill">
+                <div class="card-paper-overlay"></div>
+              </div>
+              <div class="card-border-frame"></div>
+              <div class="card-art-container">
+                <img src="assets/images/get_lucky_cover.jpg" alt="Get Lucky" class="card-art-img">
+              </div>
+              <div class="card-info-box">
+                <h3 class="card-song-title stamped-title">Get Lucky</h3>
+                <span class="card-artist-name">Daft Punk ft. Pharrell</span>
+                <div class="card-meta-row">
+                  <span class="card-duration">04:08</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 6: Resonance -->
+            <div class="dl-card state-default" data-track-id="6">
+              <div class="card-backer-fill">
+                <div class="card-paper-overlay"></div>
+              </div>
+              <div class="card-border-frame"></div>
+              <div class="card-art-container">
+                <img src="assets/images/resonance_cover.jpg" alt="Resonance" class="card-art-img">
+              </div>
+              <div class="card-info-box">
+                <h3 class="card-song-title stamped-title">Resonance</h3>
+                <span class="card-artist-name">HOME</span>
+                <div class="card-meta-row">
+                  <span class="card-duration">03:32</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 7: Starboy -->
+            <div class="dl-card state-favorite" data-track-id="7">
+              <div class="card-backer-fill">
+                <div class="card-paper-overlay"></div>
+              </div>
+              <div class="card-border-frame"></div>
+              <span class="card-tag-badge badge-fav">FAVORITE</span>
+              <div class="card-art-container">
+                <img src="assets/images/get_lucky_cover.jpg" alt="Starboy" class="card-art-img">
+              </div>
+              <div class="card-info-box">
+                <h3 class="card-song-title stamped-title">Starboy</h3>
+                <span class="card-artist-name">The Weeknd ft. Daft Punk</span>
+                <div class="card-meta-row">
+                  <span class="card-duration">03:50</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 8: Flashing Lights -->
+            <div class="dl-card state-default" data-track-id="8">
+              <div class="card-backer-fill">
+                <div class="card-paper-overlay"></div>
+              </div>
+              <div class="card-border-frame"></div>
+              <div class="card-art-container">
+                <img src="assets/images/electric_feel_cover.jpg" alt="Flashing Lights" class="card-art-img">
+              </div>
+              <div class="card-info-box">
+                <h3 class="card-song-title stamped-title">Flashing Lights</h3>
+                <span class="card-artist-name">Kanye West</span>
+                <div class="card-meta-row">
+                  <span class="card-duration">03:57</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 9: Shelter -->
+            <div class="dl-card state-default" data-track-id="9">
+              <div class="card-backer-fill">
+                <div class="card-paper-overlay"></div>
+              </div>
+              <div class="card-border-frame"></div>
+              <div class="card-art-container">
+                <img src="assets/images/strobe_cover.jpg" alt="Shelter" class="card-art-img">
+              </div>
+              <div class="card-info-box">
+                <h3 class="card-song-title stamped-title">Shelter</h3>
+                <span class="card-artist-name">Porter Robinson & Madeon</span>
+                <div class="card-meta-row">
+                  <span class="card-duration">03:39</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 10: Runaway (U & I) -->
+            <div class="dl-card state-default" data-track-id="10">
+              <div class="card-backer-fill">
+                <div class="card-paper-overlay"></div>
+              </div>
+              <div class="card-border-frame"></div>
+              <div class="card-art-container">
+                <img src="assets/images/midnight_city_cover.jpg" alt="Runaway" class="card-art-img">
+              </div>
+              <div class="card-info-box">
+                <h3 class="card-song-title stamped-title">Runaway (U & I)</h3>
+                <span class="card-artist-name">Galantis</span>
+                <div class="card-meta-row">
+                  <span class="card-duration">03:47</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+
+
+      </section>
+
+      <!-- RIGHT COLUMN: NOW PLAYING SPOTLIGHT & QUEUE CONTROLS -->
+      <section class="right-column">
+
+        <!-- Spotlight Card Container -->
+        <div class="spotlight-card paper-sculpted-panel">
+          <div class="spotlight-top-row">
+            <div class="spotlight-art-wrapper">
+              <div class="art-halo-drift"></div>
+              <div class="spotlight-art-box">
+                <img src="assets/images/midnight_city_cover.jpg" alt="Midnight City" class="spotlight-art-img" id="spotlight-art">
+              </div>
+            </div>
+
+            <div class="spotlight-details">
+              <div class="spotlight-tag-bar">
+                <span class="spotlight-badge">Now Playing</span>
+              </div>
+              <h2 class="spotlight-title stamped-title" id="spotlight-title">Midnight City</h2>
+              <span class="spotlight-artist" id="spotlight-artist">M83</span>
+              <span class="spotlight-album" id="spotlight-album">Hurry Up, We're Dreaming (2011)</span>
+
+              <div class="spotlight-genre-tags">
+                <span class="genre-chip">SYNTHWAVE</span>
+                <span class="genre-chip">INDIE ELECTRONIC</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Playback Progress Section (Refinement 6: 12 Segment Voice Level Mask Pattern) -->
+          <div class="progress-section">
+            <div class="progress-labels">
+              <span class="progress-time-display" id="progress-time">02:18 / 04:03</span>
+            </div>
+            
+            <!-- 12-segment bar with threshold mask pattern -->
+            <div class="threshold-progress-track" id="progress-track">
+              <div class="progress-segment active"></div>
+              <div class="progress-segment active"></div>
+              <div class="progress-segment active"></div>
+              <div class="progress-segment active"></div>
+              <div class="progress-segment active"></div>
+              <div class="progress-segment active"></div>
+              <div class="progress-segment active"></div>
+              <div class="progress-segment"></div>
+              <div class="progress-segment"></div>
+              <div class="progress-segment"></div>
+              <div class="progress-segment"></div>
+              <div class="progress-segment"></div>
+            </div>
+          </div>
+
+          <!-- Tactile Control Buttons (Refinement 1: Angular SVG Glyphs) -->
+          <div class="controls-row">
+            <button class="tactile-btn" id="btn-shuffle">
+              <span class="speckle-label">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M1 3h3l6 8h3M1 11h3l2.25-3M13 3h-3l-2.25 3M11 1h3v3M11 13h3v-3"/></svg>
+                SHUFFLE
+              </span>
+            </button>
+            <button class="tactile-btn" id="btn-prev">
+              <span class="speckle-label">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M2 2v10M12 2L4 7l8 5V2z"/></svg>
+                PREV
+              </span>
+            </button>
+            <button class="tactile-btn btn-primary-highlight" id="btn-playpause">
+              <span class="speckle-label">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 2v10M10 2v10"/></svg>
+                PAUSE
+              </span>
+            </button>
+            <button class="tactile-btn" id="btn-skip">
+              <span class="speckle-label">
+                NEXT
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M2 2l8 5-8 5V2zM12 2v10"/></svg>
+              </span>
+            </button>
+          </div>
+
+          <div class="connection-row">
+            <button class="tactile-btn btn-destructive btn-leave" id="btn-leave">
+              <span class="speckle-label">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M2 2l10 10M12 2L2 12"/></svg>
+                LEAVE VOICE
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Upcoming Track Queue Panel -->
+        <div class="queue-card paper-sculpted-panel">
+          <div class="queue-header">
+            <h3 class="queue-title stamped-title">Upcoming Track Queue</h3>
+            <div class="queue-header-actions">
+              <button class="queue-clear-btn" id="btn-clear-queue" title="Clear entire queue">
+                <span class="speckle-label">CLEAR</span>
+              </button>
+              <span class="queue-count-badge">3 IN QUEUE</span>
+            </div>
+          </div>
+
+          <div class="queue-list" id="queue-list-container">
+            
+            <!-- Queue Item 1: Strobe -->
+            <div class="queue-item-row" data-queue-id="1" data-title="Strobe" data-artist="deadmau5" data-art="assets/images/strobe_cover.jpg">
+              <div class="queue-item-left">
+                <span class="queue-drag-handle" title="Drag to reorder">⋮⋮</span>
+                <div class="queue-index-badge stutter-badge">01</div>
+                <img src="assets/images/strobe_cover.jpg" alt="Strobe" class="queue-art-mini">
+                <div class="queue-track-meta">
+                  <span class="queue-track-name stamped-title">Strobe</span>
+                  <span class="queue-artist-name">deadmau5</span>
+                </div>
+              </div>
+              <div class="queue-item-right">
+                <span class="queue-duration">06:48</span>
+                <span class="queue-play-btn" title="Jump to play track">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M3 2l9 5-9 5V2z"/></svg>
+                </span>
+                <span class="queue-remove-btn" title="Remove from queue">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M2 2l10 10M12 2L2 12"/></svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- Queue Item 2: Electric Feel -->
+            <div class="queue-item-row" data-queue-id="2" data-title="Electric Feel" data-artist="MGMT" data-art="assets/images/electric_feel_cover.jpg">
+              <div class="queue-item-left">
+                <span class="queue-drag-handle" title="Drag to reorder">⋮⋮</span>
+                <div class="queue-index-badge stutter-badge">02</div>
+                <img src="assets/images/electric_feel_cover.jpg" alt="Electric Feel" class="queue-art-mini">
+                <div class="queue-track-meta">
+                  <span class="queue-track-name stamped-title">Electric Feel</span>
+                  <span class="queue-artist-name">MGMT</span>
+                </div>
+              </div>
+              <div class="queue-item-right">
+                <span class="queue-duration">03:49</span>
+                <span class="queue-play-btn" title="Jump to play track">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M3 2l9 5-9 5V2z"/></svg>
+                </span>
+                <span class="queue-remove-btn" title="Remove from queue">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M2 2l10 10M12 2L2 12"/></svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- Queue Item 3: Sailing -->
+            <div class="queue-item-row" data-queue-id="3" data-title="Sailing" data-artist="Christopher Cross" data-art="assets/images/sailing_cover.jpg">
+              <div class="queue-item-left">
+                <span class="queue-drag-handle" title="Drag to reorder">⋮⋮</span>
+                <div class="queue-index-badge stutter-badge">03</div>
+                <img src="assets/images/sailing_cover.jpg" alt="Sailing" class="queue-art-mini">
+                <div class="queue-track-meta">
+                  <span class="queue-track-name stamped-title">Sailing</span>
+                  <span class="queue-artist-name">Christopher Cross</span>
+                </div>
+              </div>
+              <div class="queue-item-right">
+                <span class="queue-duration">04:17</span>
+                <span class="queue-play-btn" title="Jump to play track">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M3 2l9 5-9 5V2z"/></svg>
+                </span>
+                <span class="queue-remove-btn" title="Remove from queue">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M2 2l10 10M12 2L2 12"/></svg>
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ============================================================
+         BOTTOM FOOTER BAR
+         ============================================================ -->
+    <footer class="bottom-bar">
+      <div class="footer-left">
+        <div class="pulse-dot"></div>
+        <div class="footer-channel-info">
+          <span class="footer-channel-title">#lounge</span>
+        </div>
+      </div>
+
+      <div class="footer-center-engine">
+        RAW PCM • DISCORD OPUS
+      </div>
+
+      <!-- Single Masked Threshold Volume Control -->
+      <div class="footer-volume-control">
+        <span class="volume-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M2 5h3l3.5-3v10L5 9H2V5zM11 4.5a4 4 0 0 1 0 5"/></svg>
+        </span>
+        <span class="volume-label" id="volume-text">VOLUME 65%</span>
+        <div class="threshold-volume-track" id="volume-track">
+          <div class="threshold-volume-fill" id="volume-fill" style="transform: scaleX(0.65);"></div>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ============================================================
+       INTERACTIVE DASHBOARD BEHAVIOR SCRIPT
+       ============================================================ -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Tab Navigation switching
+      const tabs = document.querySelectorAll('.nav-tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+        });
+      });
+
+      // Filter Buttons
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+
+      // Play/Pause State Handling with Inline SVGs
+      let isPlaying = true;
+      const playPauseBtn = document.getElementById('btn-playpause');
+      const playPauseLabel = playPauseBtn.querySelector('.speckle-label');
+      const svgPause = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 2v10M10 2v10"/></svg>';
+      const svgPlay = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 2l9 5-9 5V2z"/></svg>';
+
+      playPauseBtn.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+          playPauseLabel.innerHTML = `${svgPause} PAUSE`;
+          playPauseBtn.style.background = 'radial-gradient(circle, #9AFFD6 0%, #33e59f 100%)';
+        } else {
+          playPauseLabel.innerHTML = `${svgPlay} PLAY`;
+          playPauseBtn.style.background = 'radial-gradient(circle, #FFED79 0%, #ffc533 100%)';
+        }
+      });
+
+      // Interactive Volume Slider Click
+      const volumeTrack = document.getElementById('volume-track');
+      const volumeFill = document.getElementById('volume-fill');
+      const volumeText = document.getElementById('volume-text');
+
+      volumeTrack.addEventListener('click', (e) => {
+        const rect = volumeTrack.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left;
+        const pct = Math.max(0, Math.min(100, Math.round((offsetX / rect.width) * 100)));
+        volumeFill.style.transform = `scaleX(${pct / 100})`;
+        volumeText.textContent = `VOLUME ${pct}%`;
+      });
+
+      // Interactive Progress Bar Click (12 Segment Stepped Stepper)
+      const progressTrack = document.getElementById('progress-track');
+      const progressTime = document.getElementById('progress-time');
+      const totalSecs = 4 * 60 + 3; // 243 seconds
+
+      progressTrack.addEventListener('click', (e) => {
+        const rect = progressTrack.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left;
+        const pct = Math.max(0, Math.min(100, (offsetX / rect.width) * 100));
+        const activeCount = Math.round((pct / 100) * 12);
+        const segments = progressTrack.querySelectorAll('.progress-segment');
+        segments.forEach((seg, i) => {
+          if (i < activeCount) {
+            seg.classList.add('active');
+          } else {
+            seg.classList.remove('active');
+          }
+        });
+
+        const currentSecs = Math.round((pct / 100) * totalSecs);
+        const mins = Math.floor(currentSecs / 60);
+        const secs = currentSecs % 60;
+        const formattedMin = String(mins).padStart(2, '0');
+        const formattedSec = String(secs).padStart(2, '0');
+        progressTime.textContent = `${formattedMin}:${formattedSec} / 04:03`;
+      });
+
+      // Queue Item Interactions (Remove, Play/Jump, Clear)
+      const queueList = document.getElementById('queue-list-container');
+      const clearBtn = document.getElementById('btn-clear-queue');
+
+      queueList.addEventListener('click', (e) => {
+        const removeBtn = e.target.closest('.queue-remove-btn');
+        const playBtn = e.target.closest('.queue-play-btn');
+        const row = e.target.closest('.queue-item-row');
+
+        if (removeBtn && row) {
+          row.style.opacity = '0';
+          row.style.transform = 'translateX(20px)';
+          setTimeout(() => {
+            row.remove();
+            reindexQueue();
+          }, 150);
+        } else if (playBtn && row) {
+          const title = row.getAttribute('data-title');
+          const artist = row.getAttribute('data-artist');
+          const art = row.getAttribute('data-art');
+
+          if (title && artist && art) {
+            spotlightTitle.textContent = title;
+            spotlightArtist.textContent = artist;
+            spotlightArt.src = art;
+          }
+
+          row.style.opacity = '0';
+          row.style.transform = 'translateX(-20px)';
+          setTimeout(() => {
+            row.remove();
+            reindexQueue();
+          }, 150);
+        }
+      });
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          const rows = queueList.querySelectorAll('.queue-item-row');
+          rows.forEach((row, i) => {
+            setTimeout(() => {
+              row.style.opacity = '0';
+              row.style.transform = 'translateY(10px)';
+              setTimeout(() => {
+                row.remove();
+                if (i === rows.length - 1) {
+                  reindexQueue();
+                }
+              }, 150);
+            }, i * 50);
+          });
+        });
+      }
+
+      function reindexQueue() {
+        const remainingRows = queueList.querySelectorAll('.queue-item-row');
+        document.querySelector('.queue-count-badge').textContent = `${remainingRows.length} IN QUEUE`;
+        remainingRows.forEach((row, idx) => {
+          const indexBadge = row.querySelector('.queue-index-badge');
+          if (indexBadge) {
+            indexBadge.textContent = String(idx + 1).padStart(2, '0');
+          }
+        });
+      }
+
+      // Track Card Click to Load into Spotlight
+      const cards = document.querySelectorAll('.dl-card');
+      const spotlightTitle = document.getElementById('spotlight-title');
+      const spotlightArtist = document.getElementById('spotlight-artist');
+      const spotlightArt = document.getElementById('spotlight-art');
+
+      cards.forEach(card => {
+        card.addEventListener('click', () => {
+          cards.forEach(c => {
+            if (c.classList.contains('state-now-playing')) {
+              c.classList.remove('state-now-playing');
+              c.classList.add('state-default');
+              const badge = c.querySelector('.card-tag-badge');
+              if (badge) badge.remove();
+            }
+          });
+
+          card.classList.remove('state-default', 'state-queued', 'state-selected', 'state-favorite');
+          card.classList.add('state-now-playing');
+
+          const titleEl = card.querySelector('.card-song-title');
+          const artistEl = card.querySelector('.card-artist-name');
+          const imgEl = card.querySelector('.card-art-img');
+
+          if (titleEl && artistEl && imgEl) {
+            spotlightTitle.textContent = titleEl.textContent;
+            spotlightArtist.textContent = artistEl.textContent;
+            spotlightArt.src = imgEl.src;
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
