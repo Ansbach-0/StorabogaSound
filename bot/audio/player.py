@@ -131,6 +131,14 @@ class AudioPlayer:
         # Format search query if not a direct HTTP URL
         search_query = query if query.startswith(("http://", "https://")) else f"ytsearch:{query}"
 
+        # Broadcast loading state so the dashboard shows something while
+        # the download is in progress (can take several seconds through proxy)
+        if self.broadcaster:
+            await self.broadcaster.broadcast("loading", {
+                "query": query,
+                "guild_id": str(guild_id),
+            })
+
         def _extract():
             with yt_dlp.YoutubeDL(self._yt_dlp_opts) as ytdl:
                 info = ytdl.extract_info(search_query, download=True)
