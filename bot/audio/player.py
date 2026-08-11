@@ -39,6 +39,7 @@ class AudioPlayer:
         self.broadcaster = broadcaster
         self.ffmpeg_path = ffmpeg_path or os.getenv("FFMPEG_PATH", "ffmpeg")
         self.queue_manager = QueueManager()
+        proxy_url = os.getenv("YTDLP_PROXY", "http://REDACTED_TOKEN:@your.proxy.host:47171")
         self._yt_dlp_opts: dict = {
             "format": "bestaudio/best",
             "noplaylist": True,
@@ -47,6 +48,7 @@ class AudioPlayer:
             "outtmpl": "/tmp/storaboga_%(id)s.%(ext)s",
             "quiet": True,
             "no_warnings": True,
+            "proxy": proxy_url,
         }
         self._voice_clients: dict[int, discord.VoiceClient] = {}
         self._play_start_times: dict[int, float] = {}
