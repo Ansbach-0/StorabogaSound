@@ -137,17 +137,18 @@ class AudioPlayer:
 
         def _extract():
             with yt_dlp.YoutubeDL(self._yt_dlp_opts) as ytdl:
-                info = ytdl.extract_info(search_query, download=False)
+                info = ytdl.extract_info(search_query, download=True)
                 if info is None:
                     raise RuntimeError("yt-dlp returned no information for query")
                 if "entries" in info and info["entries"]:
                     entry = info["entries"][0]
                 else:
                     entry = info
-                return entry
+                filepath = info.get("filepath") or ytdl.prepare_filename(entry)
+                return entry, filepath
 
         loop = asyncio.get_running_loop()
-        entry_info = await loop.run_in_executor(None, _extract)
+        entry_info, file_path = await loop.run_in_executor(None, _extract)
 
         title = entry_info.get("title") or "Unknown Title"
         artist = (
@@ -180,11 +181,6 @@ class AudioPlayer:
         )
 
         track_id = str(uuid.uuid4())
-        # Use the googlevideo direct URL for streaming — no proxy needed.
-        # The URL is token-authenticated and works from any IP for ~6 hours.
-        stream_url = entry_info.get("url") or ""
-        if not stream_url:
-            raise RuntimeError("yt-dlp returned no stream URL")
         track = Track(
             id=track_id,
             title=title,
@@ -201,7 +197,7 @@ class AudioPlayer:
             added_at=int(time.time() * 1000),
         )
 
-        self._file_paths[track_id] = stream_url
+        self._file_paths[track_id] = file_path
         self.queue_manager.add_track(guild_id, track)
 
         if self.broadcaster:
@@ -220,10 +216,10 @@ class AudioPlayer:
             return
 
         active_track.is_active = True
-        stream_url = self._file_paths.get(active_track.id)
+        file_path = self._file_paths.get(active_track.id)
 
-        if not stream_url:
-            logger.error(f"Stream URL missing for track {active_track.id}")
+        if not file_path or not os.path.exists(file_path):
+            logger.error(f"Audio file missing for track {active_track.id}")
             next_track = self.queue_manager.pop_next(guild_id)
             if next_track:
                 await self._start_playback(guild_id, vc)
@@ -231,35 +227,8 @@ class AudioPlayer:
                 self._schedule_disconnect(guild_id, vc)
             return
 
-        # Stream from googlevideo URL via FFmpeg through the residential proxy.
-        # The URL has the proxy IP baked in (ip=127.0.0.1), so FFmpeg must
-        # also egress through the proxy or YouTube returns 403.
-        proxy_url = os.getenv("YTDLP_PROXY", "")
-        before_opts = (
-            '-user_agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0"'
-        )
-        if proxy_url:
-            from urllib.parse import urlparse
-            import base64
-            parsed = urlparse(proxy_url)
-            if parsed.username:
-                creds = base64.b64encode(f"{parsed.username}:{parsed.password or ''}".encode()).decode()
-                before_opts += f' -headers "Proxy-Authorization: Basic {creds}"'
-            # Set proxy env vars for FFmpeg (it reads HTTP_PROXY/HTTPS_PROXY)
-            os.environ["HTTP_PROXY"] = proxy_url
-            os.environ["HTTPS_PROXY"] = proxy_url
-            os.environ["http_proxy"] = proxy_url
-            os.environ["https_proxy"] = proxy_url
-            # Discord must bypass the proxy
-            os.environ["NO_PROXY"] = "discord.com,discord.gg,discordapp.com,gateway.discord.gg"
-            os.environ["no_proxy"] = "discord.com,discord.gg,discordapp.com,gateway.discord.gg"
-
-        source: discord.AudioSource = discord.FFmpegPCMAudio(
-            stream_url,
-            executable=self.ffmpeg_path,
-            before_options=before_opts,
-            options="-vn -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
-        )
+        # Play the local file with plain FFmpeg — no proxy needed.
+        source: discord.AudioSource = discord.FFmpegPCMAudio(file_path, executable=self.ffmpeg_path)
         if guild_id in self._volumes:
             source = discord.PCMVolumeTransformer(source, volume=self._volumes[guild_id] / 100.0)
 
@@ -277,7 +246,13 @@ class AudioPlayer:
                 logger.error(f"Playback error in guild {guild_id}: {error}")
 
             self._stop_position_tracker(guild_id)
-            self._file_paths.pop(active_track.id, None)
+
+            fp = self._file_paths.pop(active_track.id, None)
+            if fp and os.path.exists(fp):
+                try:
+                    os.remove(fp)
+                except OSError:
+                    pass
 
             coro = self._handle_track_finish(guild_id, vc, active_track)
             asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
