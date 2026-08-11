@@ -6,6 +6,7 @@ export interface NowPlayingProps {
   nowPlaying: Track | null;
   queue: QueueState | null;
   positionMs: number;
+  loadingQuery?: string | null;
   onSkip: () => void;
   onPause: () => void;
   onLeave: () => void;
@@ -26,6 +27,7 @@ export function NowPlaying({
   nowPlaying,
   queue,
   positionMs,
+  loadingQuery = null,
   onSkip,
   onPause,
   onLeave,
@@ -219,6 +221,21 @@ export function NowPlaying({
               </button>
             </div>
           </>
+        ) : loadingQuery ? (
+          /* Loading State — track is being downloaded through the proxy */
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div className="summoning-circle w-32 h-32 flex flex-col items-center justify-center p-4 mb-6 animate-pulse border border-[#FFED79]/40 rounded-full">
+              <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFED79" strokeWidth="2">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+            </div>
+            <h3 className="stamped-title text-xl font-serif font-bold text-[#FFED79] mb-2">
+              Summoning track…
+            </h3>
+            <p className="font-mono text-xs text-[#C6C6C6] max-w-sm truncate">
+              {loadingQuery}
+            </p>
+          </div>
         ) : (
           /* Empty State */
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
@@ -229,7 +246,7 @@ export function NowPlaying({
               No track is currently playing
             </h3>
             <p className="font-mono text-xs text-[#C6C6C6] max-w-sm">
-              Play audio by using <span className="text-[#70F8C1]">/play &lt;query&gt;</span> in your Discord server.
+              Play audio by using <span className="text-[#70F8C1]">/play <query></span> in your Discord server.
             </p>
           </div>
         )}

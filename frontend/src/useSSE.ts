@@ -7,6 +7,7 @@ export interface SSEState {
   positionMs: number;
   trackId: string | null;
   connected: boolean;
+  loadingQuery: string | null;
 }
 
 /**
@@ -19,6 +20,7 @@ export function useSSE(): SSEState {
   const [positionMs, setPositionMs] = useState<number>(0);
   const [trackId, setTrackId] = useState<string | null>(null);
   const [connected, setConnected] = useState<boolean>(false);
+  const [loadingQuery, setLoadingQuery] = useState<string | null>(null);
 
   const retryDelayRef = useRef<number>(1000);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -46,6 +48,7 @@ export function useSSE(): SSEState {
           setNowPlaying(data);
           setTrackId(data ? data.id : null);
           setPositionMs(data ? data.position_ms : 0);
+          setLoadingQuery(null);
         } catch {
           // ignore malformed JSON
         }
@@ -89,6 +92,16 @@ export function useSSE(): SSEState {
         }
       });
 
+      es.addEventListener("loading", (event: MessageEvent) => {
+        if (!active) return;
+        try {
+          const data: { query: string } = JSON.parse(event.data);
+          setLoadingQuery(data.query);
+        } catch {
+          // ignore malformed JSON
+        }
+      });
+
       es.addEventListener("connection", (event: MessageEvent) => {
         if (!active) return;
         try {
@@ -127,5 +140,5 @@ export function useSSE(): SSEState {
     };
   }, []);
 
-  return { nowPlaying, queue, positionMs, trackId, connected };
+  return { nowPlaying, queue, positionMs, trackId, connected, loadingQuery };
 }
