@@ -56,20 +56,6 @@ export function NowPlaying({
   const showSpotlight = subView === "now-playing" || subView === undefined;
   const showQueue = subView === "queue" || subView === undefined;
 
-  const spotlightColClass =
-    subView === "now-playing"
-      ? "lg:col-span-12 flex flex-col justify-between"
-      : subView === undefined
-      ? "lg:col-span-6 flex flex-col justify-between"
-      : "hidden";
-
-  const queueColClass =
-    subView === "queue"
-      ? "lg:col-span-12 flex flex-col gap-4 min-h-[400px]"
-      : subView === undefined
-      ? "lg:col-span-6 flex flex-col gap-4 min-h-[400px]"
-      : "hidden";
-
   return (
     <section
       className="now-playing-region w-full h-full flex flex-col lg:grid lg:grid-cols-12 gap-6 overflow-y-auto"
@@ -77,7 +63,9 @@ export function NowPlaying({
     >
       {/* Spotlight Card (Now Playing) */}
       <div
-        className={`spotlight-card paper-sculpted-panel dl-card state-now-playing ${spotlightColClass}`}
+        className={`spotlight-card paper-sculpted-panel dl-card state-now-playing lg:col-span-6 flex flex-col justify-between ${
+          !showSpotlight && subView === "queue" ? "hidden lg:flex" : ""
+        }`}
         style={{ animation: "breathNowPlaying 4s infinite ease-in-out" }}
       >
         {nowPlaying ? (
@@ -248,7 +236,11 @@ export function NowPlaying({
       </div>
 
       {/* Queue Card */}
-      <div className={`queue-card paper-sculpted-panel ${queueColClass}`}>
+      <div
+        className={`queue-card paper-sculpted-panel lg:col-span-6 flex flex-col gap-4 min-h-[400px] ${
+          !showQueue && subView === "now-playing" ? "hidden lg:flex" : ""
+        }`}
+      >
         <div className="queue-header flex items-center justify-between pb-2.5 border-b border-[#FFEFD7]/12">
           <h3 className="queue-title stamped-title font-serif font-bold text-lg text-[#FFEFD7]">
             Upcoming Track Queue
@@ -274,8 +266,7 @@ export function NowPlaying({
             upcomingTracks.map((track, idx) => (
               <div
                 key={track.id}
-                className="queue-item-row flex items-center justify-between p-2.5 bg-gradient-to-r from-[#2D3026]/75 to-[#191B15]/85 border border-[#FFEFD7]/08 hover:border-[#FFEFD7]/25 hover:translate-x-1 transition-all animate-summon"
-                style={{ animationDelay: `${idx * 40}ms` }}
+                className="queue-item-row flex items-center justify-between p-2.5 bg-gradient-to-r from-[#2D3026]/75 to-[#191B15]/85 border border-[#FFEFD7]/08 hover:border-[#FFEFD7]/25 hover:translate-x-1 transition-all"
               >
                 <div className="queue-item-left flex items-center gap-2.5 min-w-0 flex-1">
                   <span className="queue-drag-handle font-mono text-sm text-[#55503E] cursor-grab" title="Drag handle">
