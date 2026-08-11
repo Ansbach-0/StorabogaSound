@@ -330,6 +330,7 @@ export default function App() {
                 nowPlaying={sse.nowPlaying}
                 queue={sse.queue}
                 positionMs={sse.positionMs}
+                loadingQuery={sse.loadingQuery}
                 onSkip={handleSkip}
                 onPause={handlePause}
                 onLeave={handleLeave}
