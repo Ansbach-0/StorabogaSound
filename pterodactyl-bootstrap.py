@@ -100,40 +100,76 @@ def install_deps():
 
 
 def install_node():
-    """Install bun (Node.js runtime + package manager) if not present."""
-    if shutil.which("npm") and shutil.which("node"):
-        print("[bootstrap] Node/npm already available")
+    """Install bun (Node.js runtime + package manager) if not present.
+
+    Falls back to nvm + Node.js LTS if bun fails.  In either case the
+    resulting bin/ directory is prepended to PATH so build_frontend()'s
+    shutil.which() can find the runner.
+    """
+    if shutil.which("bun") or (shutil.which("npm") and shutil.which("node")):
+        print("[bootstrap] bun/npm already available")
         return
-    print("[bootstrap] Installing bun...")
-    # bun install.sh installs to ~/.bun and puts bun + bunx on PATH
-    result = subprocess.run(
-        ["bash", "-c", "curl -fsSL https://bun.sh/install | bash"],
-        capture_output=True, text=True, timeout=120,
-    )
-    if result.returncode != 0:
-        print(f"[bootstrap] bun install FAILED: {result.stderr[-500:]}")
-        # Fallback: try nvm (Node.js)
-        print("[bootstrap] Falling back to nvm + Node.js...")
-        result2 = subprocess.run(
-            ["bash", "-c",
-             'curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash && '
-             'export NVM_DIR="$HOME/.nvm" && '
-             '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && '
-             'nvm install --lts && nvm use --lts'],
+
+    # --- Try bun first ---
+    # The official installer needs unzip; if it's missing, skip straight to nvm.
+    has_unzip = shutil.which("unzip")
+    if has_unzip:
+        print("[bootstrap] Installing bun...")
+        result = subprocess.run(
+            ["bash", "-c", "curl -fsSL https://bun.sh/install | bash"],
             capture_output=True, text=True, timeout=120,
         )
-        if result2.returncode != 0:
-            print(f"[bootstrap] nvm install FAILED: {result2.stderr[-500:]}")
+        if result.returncode == 0:
+            bun_dir = os.path.expanduser("~/.bun/bin")
+            os.environ["PATH"] = bun_dir + os.pathsep + os.environ.get("PATH", "")
+            check = subprocess.run(["bun", "--version"], capture_output=True, text=True)
+            print(f"[bootstrap] bun version: {check.stdout.strip()}")
+            return
+        print(f"[bootstrap] bun install FAILED: {result.stderr[-500:]}")
+    else:
+        print("[bootstrap] unzip not found — skipping bun, going straight to nvm...")
+
+    # --- Fallback: nvm + Node.js LTS ---
+    print("[bootstrap] Installing Node.js via nvm...")
+    result2 = subprocess.run(
+        ["bash", "-c",
+         'curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash && '
+         'export NVM_DIR="$HOME/.nvm" && '
+         '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && '
+         'nvm install --lts && nvm use --lts && '
+         # Print the bin path so the parent process can capture it
+         'echo "NVM_BIN_DIR=$(dirname $(which node))"'],
+        capture_output=True, text=True, timeout=180,
+    )
+    if result2.returncode != 0:
+        print(f"[bootstrap] nvm install FAILED: {result2.stderr[-500:]}")
+        sys.exit(1)
+
+    # Extract the nvm bin dir from the last line of stdout
+    nvm_bin = ""
+    for line in result2.stdout.strip().splitlines():
+        if line.startswith("NVM_BIN_DIR="):
+            nvm_bin = line.split("=", 1)[1].strip()
+            break
+
+    if nvm_bin and os.path.isdir(nvm_bin):
+        os.environ["PATH"] = nvm_bin + os.pathsep + os.environ.get("PATH", "")
+        print(f"[bootstrap] Node.js installed via nvm, bin at {nvm_bin}")
+        check = subprocess.run(["node", "--version"], capture_output=True, text=True)
+        print(f"[bootstrap] node version: {check.stdout.strip()}")
+        check2 = subprocess.run(["npm", "--version"], capture_output=True, text=True)
+        print(f"[bootstrap] npm version: {check2.stdout.strip()}")
+    else:
+        # Fallback: glob for ~/.nvm/versions/node/*/bin
+        import glob
+        candidates = sorted(glob.glob(os.path.expanduser("~/.nvm/versions/node/*/bin")))
+        if candidates:
+            nvm_bin = candidates[-1]
+            os.environ["PATH"] = nvm_bin + os.pathsep + os.environ.get("PATH", "")
+            print(f"[bootstrap] Node.js found via glob at {nvm_bin}")
+        else:
+            print("[bootstrap] ERROR: could not locate nvm node bin dir")
             sys.exit(1)
-        print("[bootstrap] Node.js installed via nvm")
-        return
-    # Add bun to PATH for this process and children
-    bun_dir = os.path.expanduser("~/.bun/bin")
-    os.environ["PATH"] = bun_dir + os.pathsep + os.environ.get("PATH", "")
-    print(f"[bootstrap] bun installed at {bun_dir}")
-    # Verify
-    check = subprocess.run(["bun", "--version"], capture_output=True, text=True)
-    print(f"[bootstrap] bun version: {check.stdout.strip()}")
 
 
 def build_frontend():
