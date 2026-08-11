@@ -50,13 +50,8 @@ class AudioPlayer:
             "quiet": True,
             "no_warnings": True,
             "default_search": "ytsearch",
-            # The residential proxy corrupts SSL after ~2MB of data transfer.
-            # yt-dlp resumes from the last good position on each retry, so
-            # many retries eventually complete even a flaky download.
-            # http_chunk_size keeps each request under the corruption threshold.
-            "http_chunk_size": 1048576,
-            "retries": 50,
-            "fragment_retries": 50,
+            "retries": 10,
+            "fragment_retries": 10,
             # CRITICAL: JS runtime for EJS n-challenge solving.
             "js_runtimes": {"deno": {}, "node": {}},
             "extractor_args": {"youtube": {"player_client": ["android_vr", "web_safari"]}},
