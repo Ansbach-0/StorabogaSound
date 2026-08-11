@@ -323,7 +323,7 @@ export default function App() {
           </header>
 
           {/* Main View Area */}
-          <main className="main-container flex-1 p-6 overflow-hidden min-w-0">
+          <main className="main-container flex-1 p-8 lg:p-10 overflow-hidden min-w-0">
             {view === "dashboard" && (
               <NowPlaying
                 user={user}
@@ -382,8 +382,8 @@ export default function App() {
                 title={`Adjust master volume (currently ${volume}%)`}
               >
                 <div
-                  className="threshold-volume-fill h-full bg-gradient-to-r from-[#E58A00] to-[#FFED79] transition-all"
-                  style={{ width: `${volume}%` }}
+                  className="threshold-volume-fill h-full bg-gradient-to-r from-[#E58A00] to-[#FFED79] origin-left"
+                  style={{ transform: `scaleX(${volume / 100})` }}
                 />
               </div>
             </div>
