@@ -41,7 +41,7 @@ class AudioPlayer:
         self.queue_manager = QueueManager()
         proxy_url = os.getenv("YTDLP_PROXY")
         self._yt_dlp_opts: dict = {
-            "format": "bestaudio/best",
+            "format": "bestaudio*/best",
             "noplaylist": True,
             "extractaudio": True,
             "audioformat": "opus",
