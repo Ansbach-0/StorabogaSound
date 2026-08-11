@@ -41,24 +41,23 @@ class AudioPlayer:
         self.queue_manager = QueueManager()
         proxy_url = os.getenv("YTDLP_PROXY")
         self._yt_dlp_opts: dict = {
-            "format": "bestaudio/best",
+            # Go STRAIGHT for small audio-only webm — don't try video first.
+            # "bestaudio/best" tries the 476MB video stream first, exhausts
+            # proxy SSL retries, then falls back to 3.57MB audio (too late).
+            "format": "bestaudio[ext=webm]/bestaudio/best",
             "noplaylist": True,
-            "extractaudio": True,
-            "audioformat": "opus",
             "outtmpl": "/tmp/storaboga_%(id)s.%(ext)s",
             "quiet": True,
             "no_warnings": True,
             "default_search": "ytsearch",
+            # The residential proxy drops SSL connections periodically.
+            # High retry counts let yt-dlp recover from SSL RECORD_LAYER_FAILURE
+            # and complete the download (audio files are ~3.5MB, manageable).
+            "retries": 15,
+            "fragment_retries": 15,
             # CRITICAL: JS runtime for EJS n-challenge solving.
-            # yt-dlp 2026.07.04 defaults to deno ONLY — if only node is
-            # installed (as on Pterodactyl), no JS runtime is found and
-            # YouTube returns "Failed to extract any player response".
             "js_runtimes": {"deno": {}, "node": {}},
-            # android_vr: no PO token required (per yt-dlp wiki).
-            # web_safari: provides HLS (m3u8) formats that also don't need
-            # PO token for GVS at this time — good fallback.
             "extractor_args": {"youtube": {"player_client": ["android_vr", "web_safari"]}},
-            # Realistic browser headers — YouTube checks these.
             "http_headers": {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0",
                 "Accept-Language": "pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3",
