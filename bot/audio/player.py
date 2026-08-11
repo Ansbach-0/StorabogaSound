@@ -48,6 +48,7 @@ class AudioPlayer:
             "outtmpl": "/tmp/storaboga_%(id)s.%(ext)s",
             "quiet": True,
             "no_warnings": True,
+            "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
         }
         if proxy_url:
             self._yt_dlp_opts["proxy"] = proxy_url
