@@ -231,11 +231,33 @@ class AudioPlayer:
                 self._schedule_disconnect(guild_id, vc)
             return
 
-        # Stream directly from googlevideo URL via FFmpeg — no proxy needed.
-        # The URL is token-authenticated and works from any IP.
+        # Stream from googlevideo URL via FFmpeg through the residential proxy.
+        # The URL has the proxy IP baked in (ip=127.0.0.1), so FFmpeg must
+        # also egress through the proxy or YouTube returns 403.
+        proxy_url = os.getenv("YTDLP_PROXY", "")
+        before_opts = (
+            '-user_agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0"'
+        )
+        if proxy_url:
+            from urllib.parse import urlparse
+            import base64
+            parsed = urlparse(proxy_url)
+            if parsed.username:
+                creds = base64.b64encode(f"{parsed.username}:{parsed.password or ''}".encode()).decode()
+                before_opts += f' -headers "Proxy-Authorization: Basic {creds}"'
+            # Set proxy env vars for FFmpeg (it reads HTTP_PROXY/HTTPS_PROXY)
+            os.environ["HTTP_PROXY"] = proxy_url
+            os.environ["HTTPS_PROXY"] = proxy_url
+            os.environ["http_proxy"] = proxy_url
+            os.environ["https_proxy"] = proxy_url
+            # Discord must bypass the proxy
+            os.environ["NO_PROXY"] = "discord.com,discord.gg,discordapp.com,gateway.discord.gg"
+            os.environ["no_proxy"] = "discord.com,discord.gg,discordapp.com,gateway.discord.gg"
+
         source: discord.AudioSource = discord.FFmpegPCMAudio(
             stream_url,
             executable=self.ffmpeg_path,
+            before_options=before_opts,
             options="-vn -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
         )
         if guild_id in self._volumes:
