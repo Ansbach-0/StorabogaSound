@@ -4,6 +4,7 @@ This runs at /home/container/bootstrap.py BEFORE the repo is cloned.
 It clones the repo, copies .env, installs deps, and launches the bot.
 """
 
+import hashlib
 import os
 import shutil
 import subprocess
@@ -40,6 +41,36 @@ def clone_or_pull():
             print(f"[bootstrap] Clone FAILED: {result.stderr}")
             sys.exit(1)
         print(f"[bootstrap] Clone OK")
+
+
+def self_update():
+    """Copy the repo's pterodactyl-bootstrap.py over this file if it changed.
+
+    The container root bootstrap (/home/container/pterodactyl-bootstrap.py) is
+    OUTSIDE the repo, so git pull never updates it.  This step copies the
+    repo's version over itself and re-execs when the SHA differs, keeping the
+    bootstrap logic in sync with the repo forever after the first manual copy.
+    """
+    self_path = os.path.abspath(__file__)
+    repo_copy = os.path.join(REPO_DIR, "pterodactyl-bootstrap.py")
+    if not os.path.isfile(repo_copy):
+        return  # repo doesn't ship one; nothing to do
+
+    def _sha(path):
+        h = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
+                h.update(chunk)
+        return h.hexdigest()
+
+    if _sha(self_path) == _sha(repo_copy):
+        return  # already in sync
+
+    print("[bootstrap] Self-update: newer pterodactyl-bootstrap.py in repo, copying over...")
+    shutil.copy(repo_copy, self_path)
+    # Re-exec so the new version runs with the updated logic
+    os.execv(sys.executable, [sys.executable, self_path] + sys.argv[1:])
+
 
 
 def copy_env():
@@ -157,6 +188,7 @@ if __name__ == "__main__":
     print(" Storaboga Sound — Pterodactyl Bootstrap")
     print("=" * 50)
     clone_or_pull()
+    self_update()
     copy_env()
     install_deps()
     install_node()
