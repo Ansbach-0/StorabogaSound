@@ -50,9 +50,12 @@ class AudioPlayer:
             "quiet": True,
             "no_warnings": True,
             "default_search": "ytsearch",
-            # The residential proxy drops SSL connections periodically.
-            # High retry counts let yt-dlp recover from SSL RECORD_LAYER_FAILURE
-            # and complete the download (audio files are ~3.5MB, manageable).
+            # CRITICAL: The residential proxy corrupts SSL after ~2MB of data.
+            # Without chunking, large downloads restart from 0 on each retry
+            # and never complete. With 1MB chunks, each HTTP Range request
+            # completes before the corruption threshold, and failed chunks
+            # retry individually without losing progress.
+            "http_chunk_size": 1048576,
             "retries": 15,
             "fragment_retries": 15,
             # CRITICAL: JS runtime for EJS n-challenge solving.
