@@ -39,7 +39,7 @@ class AudioPlayer:
         self.broadcaster = broadcaster
         self.ffmpeg_path = ffmpeg_path or os.getenv("FFMPEG_PATH", "ffmpeg")
         self.queue_manager = QueueManager()
-        proxy_url = os.getenv("YTDLP_PROXY", "http://REDACTED_TOKEN:@your.proxy.host:47171")
+        proxy_url = os.getenv("YTDLP_PROXY")
         self._yt_dlp_opts: dict = {
             "format": "bestaudio/best",
             "noplaylist": True,
@@ -48,8 +48,16 @@ class AudioPlayer:
             "outtmpl": "/tmp/storaboga_%(id)s.%(ext)s",
             "quiet": True,
             "no_warnings": True,
-            "proxy": proxy_url,
         }
+        if proxy_url:
+            self._yt_dlp_opts["proxy"] = proxy_url
+            # Belt-and-suspenders: inject auth header directly for CONNECT tunnel
+            from urllib.parse import urlparse
+            parsed = urlparse(proxy_url)
+            if parsed.username:
+                import base64
+                creds = base64.b64encode(f"{parsed.username}:{parsed.password or ''}".encode()).decode()
+                self._yt_dlp_opts["http_headers"] = {"Proxy-Authorization": f"Basic {creds}"}
         self._voice_clients: dict[int, discord.VoiceClient] = {}
         self._play_start_times: dict[int, float] = {}
         self._paused_at: dict[int, float | None] = {}
