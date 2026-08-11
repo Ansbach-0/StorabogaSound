@@ -41,14 +41,14 @@ class AudioPlayer:
         self.queue_manager = QueueManager()
         proxy_url = os.getenv("YTDLP_PROXY")
         self._yt_dlp_opts: dict = {
-            "format": "bestaudio*/best",
+            "format": "bestaudio/best",
             "noplaylist": True,
             "extractaudio": True,
             "audioformat": "opus",
             "outtmpl": "/tmp/storaboga_%(id)s.%(ext)s",
             "quiet": True,
             "no_warnings": True,
-            "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
+            "extractor_args": {"youtube": {"player_client": ["android_vr"]}},
         }
         if proxy_url:
             self._yt_dlp_opts["proxy"] = proxy_url
