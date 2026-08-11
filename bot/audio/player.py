@@ -48,21 +48,48 @@ class AudioPlayer:
             "outtmpl": "/tmp/storaboga_%(id)s.%(ext)s",
             "quiet": True,
             "no_warnings": True,
-            "extractor_args": {"youtube": {"player_client": ["android_vr"]}},
+            "default_search": "ytsearch",
+            # CRITICAL: JS runtime for EJS n-challenge solving.
+            # yt-dlp 2026.07.04 defaults to deno ONLY — if only node is
+            # installed (as on Pterodactyl), no JS runtime is found and
+            # YouTube returns "Failed to extract any player response".
+            "js_runtimes": {"deno": {}, "node": {}},
+            # android_vr: no PO token required (per yt-dlp wiki).
+            # web_safari: provides HLS (m3u8) formats that also don't need
+            # PO token for GVS at this time — good fallback.
+            "extractor_args": {"youtube": {"player_client": ["android_vr", "web_safari"]}},
+            # Realistic browser headers — YouTube checks these.
+            "http_headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0",
+                "Accept-Language": "pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Referer": "https://www.youtube.com/",
+            },
         }
+        # NOTE: cookies are intentionally NOT set. The android_vr client
+        # does not support cookies (per yt-dlp wiki) — passing cookiefile
+        # causes yt-dlp to skip android_vr and fall back to web, which
+        # requires PO tokens we don't have. The residential proxy is the
+        # anti-detection layer, not cookies.
         if proxy_url:
-            self._yt_dlp_opts["proxy"] = proxy_url
-            # Belt-and-suspenders: inject auth header directly for CONNECT tunnel
+            # Normalize proxy URL: ensure explicit empty password (token:@)
+            # so requests proxy_headers sees the username. Without the colon,
+            # requests parses "http://token@host" as user='' password=''.
             from urllib.parse import urlparse
+            import base64
             parsed = urlparse(proxy_url)
+            if parsed.username and not parsed.password:
+                # Rewrite as scheme://user:@host:port
+                normalized = proxy_url.replace(
+                    f"@{parsed.hostname}", f":@{parsed.hostname}"
+                ) if f"{parsed.username}@" in proxy_url else proxy_url
+                self._yt_dlp_opts["proxy"] = normalized
+            else:
+                self._yt_dlp_opts["proxy"] = proxy_url
+            # Inject Proxy-Authorization into existing http_headers (don't replace)
             if parsed.username:
-                import base64
                 creds = base64.b64encode(f"{parsed.username}:{parsed.password or ''}".encode()).decode()
-                self._yt_dlp_opts["http_headers"] = {"Proxy-Authorization": f"Basic {creds}"}
-        cookiefile = os.getenv("YTDLP_COOKIEFILE")
-        if cookiefile and os.path.exists(cookiefile):
-            self._yt_dlp_opts["cookiefile"] = cookiefile
-            self._yt_dlp_opts["cookiefile_constraint"] = "read"
+                self._yt_dlp_opts["http_headers"]["Proxy-Authorization"] = f"Basic {creds}"
         self._voice_clients: dict[int, discord.VoiceClient] = {}
         self._play_start_times: dict[int, float] = {}
         self._paused_at: dict[int, float | None] = {}
