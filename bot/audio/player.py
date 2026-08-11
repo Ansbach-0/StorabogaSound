@@ -58,6 +58,10 @@ class AudioPlayer:
                 import base64
                 creds = base64.b64encode(f"{parsed.username}:{parsed.password or ''}".encode()).decode()
                 self._yt_dlp_opts["http_headers"] = {"Proxy-Authorization": f"Basic {creds}"}
+        cookiefile = os.getenv("YTDLP_COOKIEFILE")
+        if cookiefile and os.path.exists(cookiefile):
+            self._yt_dlp_opts["cookiefile"] = cookiefile
+            self._yt_dlp_opts["cookiefile_constraint"] = "read"
         self._voice_clients: dict[int, discord.VoiceClient] = {}
         self._play_start_times: dict[int, float] = {}
         self._paused_at: dict[int, float | None] = {}
