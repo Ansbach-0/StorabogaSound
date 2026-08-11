@@ -31,7 +31,7 @@ export function Login() {
         {/* Login with Discord Link Button */}
         <a
           href={getLoginUrl()}
-          className="brass-switch-btn tactile-btn btn-primary-highlight text-base px-10 py-3.5 tracking-widest label-glyph flex items-center gap-3 transition-transform active:scale-95"
+          className="tactile-btn btn-primary-highlight text-base px-10 py-3.5 tracking-widest label-glyph flex items-center gap-3"
         >
           <span className="text-speckle">LOGIN WITH DISCORD</span>
         </a>
