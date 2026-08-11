@@ -1,0 +1,352 @@
+/* ============================================================
+   Web component: shop panel with category tabs, tier grids, responsive layout
+   Source: /opt/data/research/deadlock-asset-repos/deadlock-ui/packages/core/src/components/dl-shop-panel/dl-shop-panel.css
+   ============================================================ */
+
+:host {
+    display: block;
+    font-family: var(--dl-font-family);
+    color: var(--dl-text-primary);
+    line-height: 1.4;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.shop {
+    display: flex;
+    align-items: flex-start;
+    border-radius: 6px;
+    background: var(--dl-bg-primary);
+    overflow: hidden;
+    width: 1080px;
+    margin: 0 auto;
+}
+
+/* Vertical nav container */
+.nav-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    gap: 8px;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    margin-right: -12px;
+}
+
+.category-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    cursor: pointer;
+    padding: 0;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.category-icon-container {
+    position: relative;
+    width: 84px;
+    height: 73px;
+    overflow: hidden;
+    border-radius: 8px 0 0 8px;
+    transition:
+        height 0.2s ease,
+        margin-bottom 0.2s ease;
+}
+
+.category-icon-container.active {
+    height: 175px;
+    margin-bottom: 0;
+}
+
+.tab-shape {
+    position: absolute;
+    inset: 0;
+    mask-size: cover;
+    mask-position: top center;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: cover;
+    -webkit-mask-position: top center;
+    -webkit-mask-repeat: no-repeat;
+}
+
+.tab-icon {
+    position: absolute;
+    top: 50%;
+    left: calc(50% - 6px);
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+.tab-edge-overlay {
+    position: absolute;
+    inset: 0;
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    background-size: cover;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* Tiers 2x2 flex layout like Statlocker */
+.tiers {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    background-size: contain;
+    aspect-ratio: 1825 / 1618;
+}
+
+.tier-section {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    margin: 1%;
+    position: relative;
+}
+
+/* Tier sizing — all categories */
+.tier-section.tier-1 {
+    width: 45%;
+    padding: 16% 2% 3% 4%;
+}
+
+.tier-section.tier-2 {
+    width: 51%;
+    padding: 5% 3.5% 2% 1%;
+}
+
+/* Weapon: T3 wider, T4 narrower */
+.tiers.weapon .tier-section.tier-3 {
+    width: 54%;
+    padding-top: 3%;
+    margin-left: 5%;
+}
+
+.tiers.weapon .tier-section.tier-4 {
+    width: 31%;
+    margin-right: 5%;
+    padding-top: 3%;
+}
+
+/* Vitality & Spirit: T3 narrower, T4 wider */
+.tiers.vitality .tier-section.tier-3,
+.tiers.spirit .tier-section.tier-3 {
+    width: 45%;
+    margin-right: 0.8%;
+    padding: 5% 2% 2% 4%;
+}
+
+.tiers.vitality .tier-section.tier-4,
+.tiers.spirit .tier-section.tier-4 {
+    width: 51%;
+    padding: 5% 2.8% 1.4% 1%;
+}
+
+/* Items grid — fixed columns per tier */
+.mods-grid {
+    display: grid;
+    gap: 4px;
+    grid-auto-rows: min-content;
+    align-items: start;
+    justify-items: stretch;
+    width: 100%;
+}
+
+/* All categories: T1=5, T2=6 */
+.mods-grid.tier-1 {
+    grid-template-columns: repeat(5, 1fr);
+}
+.mods-grid.tier-2 {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+/* Weapon: T3=6, T4=3 (narrower box on new bg) */
+.tiers.weapon .mods-grid.tier-3 {
+    grid-template-columns: repeat(7, 1fr);
+}
+.tiers.weapon .mods-grid.tier-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* Vitality & Spirit: T3=5, T4=6 */
+.tiers.vitality .mods-grid.tier-3,
+.tiers.spirit .mods-grid.tier-3 {
+    grid-template-columns: repeat(5, 1fr);
+}
+.tiers.vitality .mods-grid.tier-4,
+.tiers.spirit .mods-grid.tier-4 {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+/* Tier price labels overlaid near the background tier banners */
+.tier-price {
+    position: absolute;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0;
+    font-family: 'Retail Demo';
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    color: rgb(107, 166, 128);
+    text-shadow: rgba(0, 0, 0, 0.7) 0px 1px 3px;
+    z-index: 1;
+    pointer-events: none;
+    white-space: nowrap;
+    transform: rotate(-5deg);
+    user-select: none;
+}
+
+.tier-price .soul-icon {
+    align-self: baseline;
+    display: inline-block;
+    width: auto;
+    height: 0.78em;
+    flex-shrink: 0;
+    margin: 0 0.32em 0 0;
+    object-fit: contain;
+    position: static;
+    transform: translateY(0.08em);
+    vertical-align: baseline;
+    filter: none;
+}
+
+/* Position each tier price to align with the background TIER labels */
+.tier-price.tier-1 {
+    top: 29%;
+    left: 4%;
+}
+
+.tiers.spirit .tier-price.tier-1, .tiers.vitality .tier-price.tier-1 {
+    top: 31%;
+    left: 5%;
+}
+
+.tier-price.tier-2 {
+    font-size: 26px;
+    top: 2%;
+    left: -0.8rem;
+}
+
+.tier-price.tier-3 {
+    font-size: 26px;
+    top: -6%;
+    left: -3%;
+}
+
+.tiers.spirit .tier-price.tier-3, .tiers.vitality .tier-price.tier-3 {
+    left: 5%;
+    top: -1%;
+}
+
+.tier-price.tier-4 {
+    font-size: 28px;
+    top: -8%;
+    left: -3%;
+}
+
+.tiers.spirit .tier-price.tier-4, .tiers.vitality .tier-price.tier-4 {
+    top: -3.7%;
+    left: -3%;
+}
+
+/* Highlight / dim effect on hover */
+.item-wrapper {
+    transition: opacity 0.15s ease;
+}
+
+.item-wrapper.dimmed {
+    opacity: 0.3;
+}
+
+.item-wrapper.highlighted {
+    opacity: 1;
+}
+
+.item-wrapper.tooltip-source {
+    position: relative;
+    z-index: 100;
+}
+
+.loading {
+    padding: 60px;
+    text-align: center;
+    color: var(--dl-text-muted);
+    font-size: 14px;
+}
+
+@media (max-width: 1119px) {
+    .category-icon-container {
+        width: 60px;
+        height: 63px;
+    }
+
+    .category-icon-container.active {
+        height: 170px;
+    }
+
+    .tab-icon {
+        top: 8px;
+        width: 42px;
+        height: 42px;
+    }
+}
+
+@media (max-width: 767px) {
+    .shop {
+        flex-direction: column;
+    }
+
+    .nav-container {
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .category-tab {
+        align-items: center;
+        flex-grow: 1;
+    }
+
+    .category-icon-container,
+    .category-icon-container.active {
+        width: 40px;
+        height: 42px;
+        margin-bottom: 0;
+    }
+
+    .tab-icon {
+        top: 5px;
+        width: 28px;
+        height: 28px;
+    }
+
+    .tiers {
+        flex-direction: column;
+    }
+
+    .tier-section {
+        width: 98% !important;
+    }
+
+    .mods-grid {
+        grid-template-columns: repeat(auto-fill, minmax(55px, 1fr)) !important;
+    }
+}

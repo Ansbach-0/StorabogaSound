@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0">
+  <title>Storaboga Sound — Apparatus Diagnostics</title>
+  <style>
+    /* ============================================================
+       DEADLOCK FONT DEFINITIONS (LOCAL OTF FILES ONLY)
+       ============================================================ */
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Reaver';
+      src: url('assets/fonts/reaver-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Demo';
+      src: url('assets/fonts/retaildemo-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Text Demo';
+      src: url('assets/fonts/retailtextdemo-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Retail Text Demo';
+      src: url('assets/fonts/retailtextdemo-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    /* ============================================================
+       DECOMPILED DEADLOCK COLOR TOKENS & DESIGN SYSTEM
+       ============================================================ */
+    :root {
+      --off-black: #10130D;       /* Warm green-tinted black background */
+      --off-white: #FFEFD7;       /* Primary text — warm cream dossier paper */
+      --soul-color: #70F8C1;      /* Active/now-playing glow — ectoplasmic mint */
+      --shard-color: #99FFD6;     /* Brighter mint for selected items */
+      --brand-green: #5FE69E;    /* Active channel / status indicator */
+      --gold-color: #FFED79;      /* Progress accent / gold indicators */
+      --spirit-color: #8A55B3;    /* Deep purple accent */
+      --weapon-color: #E58A00;    /* Warm amber / identity tags */
+      --enemy-color: #FF410D;     /* Destructive / stop / leave voice */
+      --team1-neutral: #55503E;   /* Muted secondary warm text */
+      --team2-color: #4D75C3;     /* Selection accent */
+      --steam-blue: #1A9FFF;      /* Link / info badge */
+      --rank0-color: #333333;     /* Base panel background */
+      --default-bg-1: #333333;    /* Panel tier 1 */
+      --default-bg-2: #404040;    /* Panel tier 2 */
+      --silvered: #C6C6C6;        /* Muted grey — inactive labels */
+      --warm-backer: #564a48;     /* Warm brown backer tint */
+      --card-shape-default: #575757;
+      --in-roster-wash: #c3dcd2;
+      --priority-amber: #ffc533;
+      --priority-mint: #92eac7;
+      --high-priority-mint: #33e59f;
+      --flux: var(--accent-dynamic, #70F8C1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background-color: var(--off-black);
+      font-family: 'Retail Demo', sans-serif;
+      color: var(--off-white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fixed Viewport Container (1920x1080) */
+    .dashboard-viewport {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-color: var(--off-black);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* Vignette Overlay */
+    .dashboard-viewport::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(16, 19, 13, 0.5) 85%, rgba(30, 20, 10, 0.3) 100%);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* Smoke Background Layer */
+    .smoke-bg-layer {
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/smoke_bg.png");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.35;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Ambient Radial Glow Halos */
+    .ambient-glow-left {
+      position: absolute;
+      top: 15%;
+      left: 10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(112, 248, 193, 0.08) 0%, rgba(86, 143, 120, 0.02) 60%, transparent 80%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .ambient-glow-right {
+      position: absolute;
+      bottom: 10%;
+      right: 5%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(230, 198, 148, 0.09) 0%, rgba(146, 112, 60, 0.02) 60%, transparent 80%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Paper Sculpted Panel */
+    .paper-sculpted-panel {
+      position: relative;
+      background: radial-gradient(circle at 50% 30%, rgba(44, 42, 40, 0.92) 0%, rgba(24, 23, 22, 0.95) 100%);
+      border: 1px solid rgba(255, 239, 215, 0.12);
+      box-shadow: inset rgba(0, 0, 0, 0.6) 0px 0px 32px 0px, 0px 8px 24px rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+    }
+
+    .paper-sculpted-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Text Speckle Masked Title */
+    .stamped-title {
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--off-white);
+      text-shadow: 0px 0px 0px 5px rgba(16,19,13,0.95), 2px 2px 0px 3px #10130D;
+      -webkit-mask-image: url("assets/masks/text_speckle_mask.png");
+      mask-image: url("assets/masks/text_speckle_mask.png");
+      -webkit-mask-size: cover;
+      mask-size: cover;
+    }
+
+    /* ============================================================
+       TOP HEADER BAR
+       ============================================================ */
+    .top-bar {
+      position: relative;
+      z-index: 10;
+      height: 72px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(ellipse at 50% 100%, rgba(40, 44, 34, 0.96) 0%, rgba(16, 19, 13, 0.99) 100%);
+      border-bottom: 1px solid rgba(255, 239, 215, 0.14);
+      box-shadow: inset rgba(0, 0, 0, 0.5) 0px -2px 16px 0px, 0 4px 20px rgba(0, 0, 0, 0.7);
+    }
+
+    .top-bar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-logo-crest {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba(112, 248, 193, 0.25) 0%, transparent 70%);
+      border: 1px solid var(--soul-color);
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1);
+      transform: rotate(45deg);
+    }
+
+    .brand-logo-inner {
+      width: 16px;
+      height: 16px;
+      background-color: var(--soul-color);
+    }
+
+    .brand-title {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .nav-tab {
+      position: relative;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      color: var(--silvered);
+      background-color: #33322d;
+      -webkit-mask-image: url("assets/masks/button_mask_threshold.png");
+      mask-image: url("assets/masks/button_mask_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1), background-color 0.04s ease, color 0.04s ease;
+    }
+
+    .nav-tab::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/button_paper_tile.png");
+      background-repeat: repeat;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .nav-tab:hover {
+      color: var(--off-white);
+      background-color: #48463f;
+      transform: scale(1.03);
+    }
+
+    .nav-tab.active {
+      color: var(--off-white);
+      background: linear-gradient(180deg, #33e59f 0%, #1f4f3c 100%);
+      text-shadow: 0px 0px 0px 5px rgba(16,19,13,0.95), 2px 2px 0px 3px #10130D;
+      box-shadow: inset 0 -2px 0 0 var(--soul-color), inset 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .tab-active-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--soul-color);
+      box-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .voice-status-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 19, 13, 0.85);
+      border: 1px solid rgba(95, 230, 158, 0.4);
+      padding: 6px 14px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand-green);
+      box-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .voice-channel-name {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 12px;
+      color: var(--brand-green);
+      font-weight: 700;
+    }
+
+    .user-card-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(30, 32, 26, 0.8);
+      border: 1px solid rgba(255, 239, 215, 0.15);
+      padding: 5px 12px 5px 6px;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
+    }
+
+    .user-avatar-frame {
+      width: 36px;
+      height: 36px;
+      background: var(--spirit-color);
+      border: 1.5px solid var(--soul-color);
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      color: var(--off-white);
+      font-size: 16px;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-family: 'Retail Demo', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--off-white);
+      line-height: 1.1;
+    }
+
+    .admin-badge {
+      font-family: 'Retail Text Demo', monospace;
+      font-weight: 700;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--spirit-color);
+      background: rgba(138, 85, 179, 0.2);
+      border: 1px solid rgba(138, 85, 179, 0.4);
+      padding: 1px 5px;
+      margin-top: 2px;
+      width: fit-content;
+    }
+
+    /* ============================================================
+       MAIN CONTENT CONTAINER (DENSE VIEWPORT FILLING GRID)
+       ============================================================ */
+    .main-container {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 32px;
+      height: calc(1080px - 72px - 56px);
+      overflow: hidden;
+    }
+
+    .status-panel {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 24px;
+      gap: 14px;
+      height: 100%;
+    }
+
+    .status-header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .status-title {
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .deco-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(229,138,0,0.3) 15%, rgba(255,237,121,0.75) 50%, rgba(229,138,0,0.3) 85%, transparent 100%);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      margin-top: 4px;
+    }
+
+    /* 3-COLUMN DENSE GRID LAYOUT */
+    .diagnostic-grid {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      gap: 16px;
+      height: calc(100% - 40px);
+      min-height: 0;
+    }
+
+    .diag-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .col-left { flex: 40; }
+    .col-mid { flex: 35; }
+    .col-right { flex: 25; }
+
+    /* DEADLOCK HUD DIAGNOSTIC CARDS */
+    .diag-card {
+      position: relative;
+      background: radial-gradient(circle at 40% 30%, rgba(38, 36, 32, 0.94) 0%, rgba(20, 19, 17, 0.97) 100%);
+      border: 1px solid rgba(255, 239, 215, 0.14);
+      box-shadow: inset rgba(0, 0, 0, 0.6) 0px 0px 24px 0px, 0px 6px 18px rgba(0, 0, 0, 0.7);
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .diag-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.14;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .card-header-sm {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 4px;
+    }
+
+    .card-tag {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--team1-neutral);
+      text-transform: uppercase;
+    }
+
+    .gold-hairline-divider {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 237, 121, 0.35) 20%, rgba(255, 237, 121, 0.35) 80%, transparent 100%);
+      margin: 4px 0;
+    }
+
+    /* NUMERAL READOUT PATTERNS */
+    .stat-block {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .numeral-huge {
+      font-family: 'Retail Text Demo', monospace;
+      font-weight: 700;
+      font-size: 42px;
+      line-height: 1;
+      color: var(--gold-color);
+      text-shadow: 0px 0px 0px 3px rgba(16,19,13,0.95), 2px 2px 0px 2px #10130D;
+    }
+
+    .numeral-large {
+      font-family: 'Retail Text Demo', monospace;
+      font-weight: 700;
+      font-size: 32px;
+      line-height: 1;
+      color: var(--off-white);
+      text-shadow: 0px 0px 0px 3px rgba(16,19,13,0.95), 1.5px 1.5px 0px 2px #10130D;
+    }
+
+    .numeral-giant {
+      font-family: 'Retail Text Demo', monospace;
+      font-weight: 700;
+      font-size: 56px;
+      line-height: 1;
+      text-shadow: 0px 0px 0px 4px rgba(16,19,13,0.95), 2px 2px 0px 2px #10130D;
+    }
+
+    .numeral-mid {
+      font-family: 'Retail Text Demo', monospace;
+      font-weight: 700;
+      font-size: 22px;
+      line-height: 1;
+      color: var(--shard-color);
+    }
+
+    .numeral-label {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      color: var(--silvered);
+      text-transform: uppercase;
+    }
+
+    .text-mint { color: var(--brand-green); }
+    .text-soul { color: var(--soul-color); }
+    .text-gold { color: var(--gold-color); }
+    .text-shard { color: var(--shard-color); }
+
+    /* MEMORY HORIZONTAL METER */
+    .mem-bar-track {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 22px;
+      background-color: rgba(16, 19, 13, 0.95);
+      border: 1px solid rgba(255, 239, 215, 0.18);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
+      padding: 2px;
+    }
+
+    .mem-bar-fill {
+      height: 100%;
+      width: 100%;
+      transform-origin: left center;
+      -webkit-mask-image: url("assets/masks/progress_bar_threshold.png");
+      mask-image: url("assets/masks/progress_bar_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      transition: transform 0.04s ease;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.5);
+    }
+
+    /* LATENCY ARC GAUGE */
+    .gauge-arc-wrapper {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 0 0 0;
+    }
+
+    .arc-svg {
+      display: block;
+    }
+
+    .arc-center-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: -30px;
+    }
+
+    /* CONNECTION STATUS ROWS */
+    .conn-stat-row {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+    }
+
+    .conn-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .pulse-dot-mint {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--soul-color);
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.6);
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    .pulse-dot-red {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--enemy-color);
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.6);
+      animation: pulseRedGlow 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulseRedGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* SERVICE STATUS LIST */
+    .service-list {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .service-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+    }
+
+    .service-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .service-name {
+      font-family: 'Reaver', serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: var(--off-white);
+    }
+
+    .service-val {
+      font-family: 'Retail Text Demo', monospace;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    /* ON AIR CARD */
+    .on-air-box {
+      background: radial-gradient(circle at 50% 30%, rgba(65, 25, 20, 0.94) 0%, rgba(28, 14, 12, 0.98) 100%);
+      border: 1px solid rgba(255, 65, 13, 0.4);
+      padding: 20px 24px;
+      align-items: center;
+      text-align: center;
+    }
+
+    .on-air-header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .on-air-text {
+      font-size: 32px;
+      line-height: 1;
+      color: var(--off-white);
+    }
+
+    .on-air-subtext {
+      position: relative;
+      z-index: 2;
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--priority-amber);
+      margin-top: 6px;
+    }
+
+    /* VERTICAL RESOURCE METER */
+    .flex-fill {
+      flex: 1;
+      justify-content: space-between;
+    }
+
+    .vertical-meter-container {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 0;
+    }
+
+    .vertical-segments {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: rgba(16, 19, 13, 0.95);
+      border: 1px solid rgba(255, 239, 215, 0.15);
+      padding: 6px;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.9);
+    }
+
+    .v-segment {
+      flex: 1;
+      background-color: #1c1a16;
+      border: 1px solid rgba(92, 74, 42, 0.3);
+      -webkit-mask-image: url("assets/masks/progress_bar_threshold.png");
+      mask-image: url("assets/masks/progress_bar_threshold.png");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      transition: background-color 0.04s ease;
+    }
+
+    .v-segment.filled-gold {
+      background: linear-gradient(180deg, #FFED79 0%, #ffc533 100%);
+      border-color: rgba(255, 237, 121, 0.6);
+      box-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .meter-readout {
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: var(--gold-color);
+      text-align: center;
+    }
+
+    /* ============================================================
+       BOTTOM FOOTER BAR
+       ============================================================ */
+    .bottom-bar {
+      position: relative;
+      z-index: 10;
+      height: 56px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(ellipse at 50% 0%, rgba(35, 38, 28, 0.98) 0%, rgba(14, 16, 11, 0.99) 100%);
+      border-top: 1px solid rgba(255, 239, 215, 0.14);
+      box-shadow: inset rgba(0, 0, 0, 0.5) 0px 2px 16px 0px, 0 -4px 20px rgba(0, 0, 0, 0.7);
+    }
+
+    .bottom-bar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/textures/paper_tile_1k_01.png");
+      background-repeat: repeat;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .footer-left-tag, .footer-right-tag {
+      position: relative;
+      z-index: 2;
+      font-family: 'Retail Text Demo', monospace;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: var(--silvered);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- FIXED VIEWPORT SHELL (1920x1080) -->
+  <div class="dashboard-viewport">
+
+    <!-- Atmospheric Smoke Background Backdrop -->
+    <div class="smoke-bg-layer"></div>
+    <div class="ambient-glow-left"></div>
+    <div class="ambient-glow-right"></div>
+
+    <!-- TOP HEADER BAR -->
+    <header class="top-bar">
+      <div class="brand-section">
+        <div class="brand-logo-crest">
+          <div class="brand-logo-inner"></div>
+        </div>
+        <div class="brand-title-box">
+          <h1 class="brand-title stamped-title">STORABOGA SOUND</h1>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <a href="dashboard.html" class="nav-tab">
+          <span>Now Playing</span>
+        </a>
+        <a href="dashboard.html" class="nav-tab">
+          <span>Queue</span>
+        </a>
+        <a href="dashboard.html" class="nav-tab">
+          <span>History</span>
+        </a>
+        <a href="status.html" class="nav-tab active">
+          <span class="tab-active-dot"></span>
+          <span>Status</span>
+        </a>
+        <a href="settings.html" class="nav-tab">
+          <span>Settings</span>
+        </a>
+        <a href="dashboard.html" class="nav-tab">
+          <span>Login with Discord</span>
+        </a>
+      </nav>
+
+      <!-- Connected User & Channel Badge -->
+      <div class="user-profile">
+        <div class="voice-status-chip">
+          <span class="pulse-dot"></span>
+          <span class="voice-channel-name">#lounge</span>
+        </div>
+        <div class="user-card-badge">
+          <div class="user-avatar-frame">V</div>
+          <div class="user-info">
+            <span class="user-name">Vini</span>
+            <span class="admin-badge">ADMIN</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN DIAGNOSTIC PANEL -->
+    <main class="main-container">
+      <section class="status-panel paper-sculpted-panel">
+        
+        <div class="status-header">
+          <h2 class="status-title stamped-title">STATUS</h2>
+          <div class="deco-divider"></div>
+        </div>
+
+        <!-- Dense 3-Column Diagnostic Layout -->
+        <div class="diagnostic-grid">
+
+          <!-- LEFT COLUMN (40% width) -->
+          <div class="diag-col col-left">
+            
+            <!-- 1. System Health Panel -->
+            <div class="diag-card">
+              <div class="card-header-sm">
+                <span class="card-tag">SYSTEM HEALTH</span>
+              </div>
+              
+              <div class="stat-block">
+                <div class="numeral-huge">1d 0h 0m</div>
+                <div class="numeral-label">UPTIME</div>
+              </div>
+
+              <div class="gold-hairline-divider"></div>
+
+              <div class="stat-block">
+                <div class="numeral-mid">v1.0.0</div>
+                <div class="numeral-label">BUILD</div>
+              </div>
+            </div>
+
+            <!-- 2. Memory Gauge -->
+            <div class="diag-card">
+              <div class="card-header-sm">
+                <span class="card-tag">MEMORY</span>
+              </div>
+
+              <div class="stat-block">
+                <div class="numeral-large">412 / 1024 MB</div>
+              </div>
+
+              <div class="mem-bar-track">
+                <div class="mem-bar-fill" style="transform: scaleX(0.402); background-color: var(--gold-color);"></div>
+              </div>
+            </div>
+
+            <!-- 3. Latency Gauge -->
+            <div class="diag-card">
+              <div class="card-header-sm">
+                <span class="card-tag">LATENCY</span>
+              </div>
+
+              <div class="gauge-arc-wrapper">
+                <svg width="220" height="110" viewBox="0 0 220 110" class="arc-svg">
+                  <!-- Base Track -->
+                  <path d="M 20 100 A 90 90 0 0 1 200 100" fill="none" stroke="#22201b" stroke-width="12" stroke-linecap="butt"/>
+                  <!-- Green Mint Zone (<100ms) -->
+                  <path d="M 20 100 A 90 90 0 0 1 100 10" fill="none" stroke="var(--soul-color)" stroke-width="12" stroke-linecap="butt" opacity="0.9"/>
+                  <!-- Amber Zone (100-300ms) -->
+                  <path d="M 100 10 A 90 90 0 0 1 170 35" fill="none" stroke="var(--weapon-color)" stroke-width="12" stroke-linecap="butt" opacity="0.6"/>
+                  <!-- Red Zone (>300ms) -->
+                  <path d="M 170 35 A 90 90 0 0 1 200 100" fill="none" stroke="var(--enemy-color)" stroke-width="12" stroke-linecap="butt" opacity="0.6"/>
+                  <!-- Needle pointing to ~42ms -->
+                  <line x1="110" y1="100" x2="62" y2="35" stroke="var(--gold-color)" stroke-width="3" stroke-linecap="round"/>
+                  <circle cx="110" cy="100" r="6" fill="var(--weapon-color)" stroke="#10130D" stroke-width="2"/>
+                </svg>
+                <div class="arc-center-stat">
+                  <span class="numeral-large text-soul">42 MS</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- MIDDLE COLUMN (35% width) -->
+          <div class="diag-col col-mid">
+            
+            <!-- 4. Connection Status -->
+            <div class="diag-card">
+              <div class="card-header-sm">
+                <span class="card-tag">NETWORK CONNECTIONS</span>
+              </div>
+
+              <div class="conn-stat-row">
+                <div class="conn-info">
+                  <div class="numeral-giant text-gold">3</div>
+                  <div class="numeral-label">SERVERS CONNECTED</div>
+                </div>
+                <span class="pulse-dot-mint"></span>
+              </div>
+
+              <div class="gold-hairline-divider"></div>
+
+              <div class="conn-stat-row">
+                <div class="conn-info">
+                  <div class="numeral-giant text-mint">1</div>
+                  <div class="numeral-label">VOICE CHANNELS</div>
+                </div>
+                <span class="pulse-dot-mint"></span>
+              </div>
+            </div>
+
+            <!-- 5. Service Status List -->
+            <div class="diag-card" style="flex: 1;">
+              <div class="card-header-sm">
+                <span class="card-tag">SERVICE STATUS</span>
+              </div>
+
+              <div class="service-list">
+                <div class="service-row">
+                  <div class="service-left">
+                    <span class="pulse-dot-mint"></span>
+                    <span class="service-name">BOT PROCESS</span>
+                  </div>
+                  <span class="service-val text-soul">RUNNING</span>
+                </div>
+                <div class="gold-hairline-divider"></div>
+
+                <div class="service-row">
+                  <div class="service-left">
+                    <span class="pulse-dot-mint"></span>
+                    <span class="service-name">WEB SERVER</span>
+                  </div>
+                  <span class="service-val text-gold">LISTENING :2497</span>
+                </div>
+                <div class="gold-hairline-divider"></div>
+
+                <div class="service-row">
+                  <div class="service-left">
+                    <span class="pulse-dot-mint"></span>
+                    <span class="service-name">DATABASE</span>
+                  </div>
+                  <span class="service-val text-soul">CONNECTED</span>
+                </div>
+                <div class="gold-hairline-divider"></div>
+
+                <div class="service-row">
+                  <div class="service-left">
+                    <span class="pulse-dot-mint"></span>
+                    <span class="service-name">FFMPEG</span>
+                  </div>
+                  <span class="service-val text-shard">AVAILABLE</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN (25% width) -->
+          <div class="diag-col col-right">
+            
+            <!-- 6. ON AIR Indicator -->
+            <div class="diag-card on-air-box">
+              <div class="on-air-header">
+                <span class="pulse-dot-red"></span>
+                <span class="on-air-text stamped-title">ON AIR</span>
+              </div>
+              <div class="on-air-subtext">3 STATIONS CONNECTED</div>
+            </div>
+
+            <!-- 7. Resource Bar (Vertical 10 Segments) -->
+            <div class="diag-card flex-fill">
+              <div class="card-header-sm">
+                <span class="card-tag">RESOURCE PRESSURE</span>
+              </div>
+
+              <div class="vertical-meter-container">
+                <div class="vertical-segments">
+                  <div class="v-segment"></div>
+                  <div class="v-segment"></div>
+                  <div class="v-segment"></div>
+                  <div class="v-segment"></div>
+                  <div class="v-segment"></div>
+                  <div class="v-segment"></div>
+                  <div class="v-segment filled-gold"></div>
+                  <div class="v-segment filled-gold"></div>
+                  <div class="v-segment filled-gold"></div>
+                  <div class="v-segment filled-gold"></div>
+                </div>
+                <div class="meter-readout">40% MEMORY PRESSURE</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bottom-bar">
+      <div class="footer-left-tag">APPARATUS DIAGNOSTICS</div>
+      <div class="footer-right-tag">v1.0.0</div>
+    </footer>
+
+  </div>
+
+</body>
+</html>

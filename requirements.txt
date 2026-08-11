@@ -1,0 +1,14 @@
+discord.py>=2.4
+yt-dlp>=2025.1.1
+colorthief>=0.2.1
+aiosqlite>=0.20
+fastapi>=0.115
+uvicorn[standard]>=0.34
+sse-starlette>=2.1
+httpx>=0.28
+python-multipart>=0.0.18
+itsdangerous>=2.2
+Pillow>=11.0
+python-dotenv>=1.0
+psutil>=5.9
+

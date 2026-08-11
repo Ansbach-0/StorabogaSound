@@ -1,0 +1,44 @@
+/* ============================================================
+   Web component library global tokens - CSS custom properties for bg, text, tier, colors, fonts
+   Source: /opt/data/research/deadlock-asset-repos/deadlock-ui/packages/core/src/global/global.css
+   ============================================================ */
+
+:root {
+  --dl-bg-primary: #1a1a2e;
+  --dl-bg-secondary: #16213e;
+  --dl-bg-tooltip: #0f0f1a;
+  --dl-text-primary: #e0e0e0;
+  --dl-text-secondary: #a0a0b0;
+  --dl-text-muted: #6a6a7a;
+  --dl-text-tooltip: #f7e7d1;
+  --dl-border: #2a2a4a;
+
+  --dl-weapon: #cc8932;
+  --dl-vitality: #6dc04b;
+  --dl-spirit: #c878f0;
+
+  --dl-tier-1: #8b9bae;
+  --dl-tier-2: #5a9e3e;
+  --dl-tier-3: #c076db;
+  --dl-tier-4: #e08b35;
+  --dl-tier-5: #e04545;
+
+  --dl-font-family: 'Retail Demo', sans-serif;
+  --dl-radius: 4px;
+  --dl-transition: 150ms ease;
+}
+
+/* Reserve component footprints before hydration to avoid layout shift (CLS).
+   Values mirror each component's :host sizing. */
+dl-hero-card {
+  display: block;
+  width: var(--dl-hero-card-width, 95px);
+  aspect-ratio: 130 / 210;
+}
+
+dl-hero-minimap-icon {
+  display: inline-block;
+  width: var(--dl-minimap-icon-size, 32px);
+  height: var(--dl-minimap-icon-size, 32px);
+  aspect-ratio: 1 / 1;
+}
