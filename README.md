@@ -4,6 +4,8 @@
 
 Streams high-fidelity audio from YouTube, SoundCloud, and Bandcamp into your voice channels — and lets your server control it from a dashboard that looks like the game's hero-select screen: warm parchment, soul-mint glow, art-deco noir. No Lavalink, no heavy containers — fits in 1GB of RAM.
 
+> 🤖 **Built with an AI agent pipeline.** This project was designed and built by a multi-agent system — [Hermes Agent](https://github.com/NousResearch/hermes-agent) as the orchestrating brain, Google Antigravity (gemini-3.7-flash-high) as the building worker, and a research agent for verification. Every screen went through brief → build → visual self-review → human verdict. The failures, fixes, and full architecture are documented in **[AI-WORKFLOW.md](AI-WORKFLOW.md)** — including how over-constrained prompts nearly killed the design and what we did about it.
+
 ---
 
 ## 📸 Screenshots
