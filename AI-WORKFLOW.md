@@ -1,6 +1,6 @@
 # AI Agent Pipeline — How This Project Was Actually Built
 
-> **tl;dr:** This project was not written by a human typing code alone. It was designed, built, and iterated by a **multi-agent AI pipeline** — orchestrated by a human who knows how to direct agents, verify their output, and keep them creative. If you're a recruiter: this is what advanced AI-assisted engineering looks like in practice.
+> **tl;dr:** This project was built by a **multi-agent AI pipeline** — a human orchestrator directing specialized agents (design, research, build) through goal-first briefs, visual verification gates, and review loops. The architecture, the failures, and the fixes are documented below.
 
 ---
 
@@ -75,7 +75,7 @@ The agent drifted into neon-teal cyberpunk. Deadlock is *warm*.
 
 ---
 
-## 📊 What This Proves
+## 📌 Lessons
 
 - **Orchestration is a skill.** Directing agents with the right brief structure produces fundamentally better output than prompting harder.
 - **Verification loops are everything.** Visual self-gates, date-verified sources, contract tests against the real backend — the human's job is to build the loops, not write every line.
