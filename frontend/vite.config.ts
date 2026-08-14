@@ -5,7 +5,18 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
-  server: { proxy: { "/api": "http://localhost:2497", "/auth": "http://localhost:2497" } },
-  build: { outDir: "dist" },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  server: {
+    proxy: {
+      "/api": "http://localhost:2497",
+      "/auth": "http://localhost:2497",
+    },
+  },
+  build: {
+    outDir: "dist",
+  },
 });
