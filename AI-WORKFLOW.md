@@ -61,7 +61,7 @@ This is the part that matters — every one of these was a real failure we diagn
 
 ### 1. "Biggest AI slop I've seen in years" — the over-constraining trap
 The first UI attempt was **over-constrained**: a massive brief with endless do-nots. The agent burned its intelligence on rule-compliance and produced a generic dashboard with game-colored paint.
-**Fix:** the research agent pulled Google's official Gemini/Antigravity prompting docs and found the documented failure mode: *"verbose or complex prompt engineering techniques designed for older models may cause the model to over-analyze."* We rewrote the brief system to be **goal-first, constraint-light, persona-with-voice** — and the agent's design quality jumped immediately.
+**Fix:** the research agent pulled Google's official Antigravity prompting docs and found the documented failure mode: *"verbose or complex prompt engineering techniques designed for older models may cause the model to over-analyze."* We rewrote the brief system to be **goal-first, constraint-light, persona-with-voice** — and the agent's design quality jumped immediately.
 
 ### 2. Dated reference material
 The first screenshots were pre-*Old Gods* Deadlock — the game's UI had changed, and the agent faithfully replicated an outdated look.
