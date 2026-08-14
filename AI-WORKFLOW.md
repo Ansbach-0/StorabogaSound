@@ -1,6 +1,6 @@
 # AI Agent Pipeline — How This Project Was Actually Built
 
-> **tl;dr:** This project was built by a **multi-agent AI pipeline** — a human orchestrator directing specialized agents (design, research, build) through goal-first briefs, visual verification gates, and review loops. The architecture, the failures, and the fixes are documented below.
+> **tl;dr:** This project was built by a **multi-agent AI pipeline** — the ideas came from a human, the execution was delegated through a custom orchestration layer that acts as a second brain: it writes goal-first briefs, dispatches to specialized agents, verifies their work, iterates on failures, and ships. The architecture, the failures, and the fixes are documented below.
 
 ---
 
@@ -8,39 +8,50 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        HUMAN ORCHESTRATOR                        │
-│              (direction, taste, verification, version control)   │
+│                      HUMAN (IDEAS & TASTE)                       │
+│        "make it look like the game" · "this is slop"            │
+│             "this is perfect" · "warmer colors"                 │
 └──────────────────────────────┬──────────────────────────────────┘
-                               │ briefs + review loops
-        ┌──────────────────────┼──────────────────────┐
-        ▼                      ▼                      ▼
-┌───────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│   HERMES      │    │  DESIGN AGENT   │    │  RESEARCH AGENT  │
-│  (orchestrator)│    │ (builder)        │    │ (researcher)      │
-│ Orchestrates  │───▶│ Antigravity CLI  │    │ deepseek-v4-flash│
-│ agents,       │    │ gemini-3.7-flash │    │ via opencode-go  │
-│ writes briefs,│    │ -high, account   │    │ researches docs, │
-│ monitors,     │    │ pool rotation    │    │ verifies facts   │
-│ verifies      │    │ (design+build)   │    │                  │
-└───────────────┘    └──────────────────┘    └──────────────────┘
+                               │
+┌──────────────────────────────▼──────────────────────────────────┐
+│                  ORCHESTRATION LAYER (the "second brain")        │
+│   writes briefs · dispatches · monitors · verifies · commits    │
+│   runs the custom skill/delegation pipeline · learns over time  │
+└───────────────┬──────────────────────────────┬──────────────────┘
+                │                              │
+                ▼                              ▼
+      ┌──────────────────┐          ┌──────────────────────┐
+      │   BUILD AGENT    │          │    RESEARCH AGENT    │
+      │  Antigravity CLI │          │  multiplexed profile │
+      │  (worker)   │          │  (custom delegation  │
+      │  design + code   │          │   pipeline — sub-    │
+      │  visual self-gate│          │   agents learn and   │
+      │  account rotation│          │   improve over time) │
+      └──────────────────┘          └──────────────────────┘
 ```
 
-| Role | Tool | Job |
+| Role | Platform | Job |
 |---|---|---|
-| **The Orchestrator** | [Hermes Agent](https://github.com/NousResearch/hermes-agent) (Nous Research) | Orchestration: writes goal-first briefs, dispatches work, watches agents in real-time (live file-write monitoring), runs verification loops, handles git/version control, and makes the calls the agents can't |
-| **The Worker** | [Google Antigravity CLI](https://antigravity.google) (the CLI) — **design agent**, `gemini-3.7-flash-high` | The actual design + code: studied references, built components, ran its own visual QA. Backed by a pool of Google AI Pro accounts with quota rotation |
-| **The Researcher** | **Research agent** — `deepseek-v4-flash` | Independent research: pulled Google's own prompting docs, sourced and **date-verified** 2026 game footage, wrote manifests — an independent second opinion |
+| **The Human** | — | Ideas, direction, taste. Every "this is slop" / "this is perfect" verdict in this project's history came from here |
+| **Orchestration Layer** | [Hermes Agent](https://github.com/NousResearch/hermes-agent) (Nous Research) | Acts as a **second brain**: turns ideas into goal-first briefs, dispatches work, monitors agents in real-time (live file-write monitoring), runs verification loops, handles version control, and ships. The human never touches the delegation mechanics |
+| **Build Agent** | [Google Antigravity CLI](https://antigravity.google) (the CLI) | Design + code: studies references, builds components, screenshots its own work and reviews it before declaring done. Backed by a pool of accounts with quota rotation |
+| **Research Agent** | Multiplexed profile in the custom delegation pipeline | Independent research and verification. Runs as its own persistent profile — **unlike stock subagents, it keeps its own skills and memory and gets measurably better over time**: it learned the video→frame→reference-pack workflow as a skill, updated its memory with new principles after every task, and applied them on the next one |
+
+**Model-agnostic by design:** the pipeline describes *roles and platforms*, not models. The orchestration layer, the build agent, and the research agent can each run on whatever model fits the job — the architecture doesn't care. Models are a swappable detail, the delegation system is the point.
 
 ---
 
 ## 🏗️ How a Feature Actually Gets Built
 
-1. **Brief, not spec** — the orchestrator writes a *goal-first, freedom-preserving* brief: what the screen must be, which references to study, what to keep functional. Not a 5,000-word rule wall.
-2. **Reference = authority** — the design agent is pointed at real source material (game frames, the live component playground, the actual npm packages) and required to study it directly before touching code.
-3. **Agent builds** — the design agent explores, plans, writes code, and iterates.
-4. **Visual gate** — the design agent screenshots its own work with headless Chrome and reviews it itself before declaring done. No more "I wrote it so it must look good."
-5. **Human review** — the orchestrator screenshots again, sends pixels to the human, and the human's verdict drives the next pass.
-6. **Ship** — version control, commit hygiene, push.
+1. **Human gives an idea** — "let's make a Deadlock-themed dashboard", "the queue is too small", "make the backgrounds warmer"
+2. **Brief, not spec** — the orchestration layer writes a *goal-first, freedom-preserving* brief: what the screen must be, which references to study, what to keep functional. Not a 5,000-word rule wall
+3. **Reference = authority** — the build agent is pointed at real source material (game frames, the live component playground, the actual npm packages) and required to study it directly before touching code
+4. **Agent builds** — the build agent explores, plans, writes code, and iterates
+5. **Visual gate** — the build agent screenshots its own work with headless Chrome and reviews it itself before declaring done. No more "I wrote it so it must look good."
+6. **Human review** — screenshots go back to the human; the verdict drives the next pass
+7. **Ship** — version control, commit hygiene, push
+
+The loop is: **idea → brief → build → look → fix → ship**. It runs on every feature, every screen, every iteration.
 
 ---
 
@@ -61,7 +72,7 @@ Screens shipped with detached buttons and clipped text because the agent never a
 **Fix:** a hard **visual self-gate**: the agent screenshots every view with headless Chrome, opens the screenshots, reviews them against a checklist, fixes, re-screenshots, and may not report DONE until its own eyes pass.
 
 ### 4. Reimplementing what already existed
-The design agent hand-built the game.s shop panel from screenshots — a "1:1 copy" that looked right but wasn't the real thing.
+The build agent hand-built the game's shop panel from screenshots — a "1:1 copy" that looked right but wasn't the real thing.
 **Fix:** we discovered the actual deadlock-ui ships as **published npm packages** (`@deadlock-api/ui-react` / `ui-core`). The hand-built imitation was deleted and replaced with the real web components — real JS behavior, real tooltips, real hover-scale.
 
 ### 5. "Too futuristic, colors don't match the game"
@@ -75,15 +86,17 @@ The bot's home is a 1GB VPS — and that constraint killed every easy answer bef
 - **SSE instead of WebSockets** — server-push with a fraction of the overhead
 - **No external database** — aiosqlite, zero server processes
 The 1GB budget became a design tool: every layer of the stack is there because it *earned* its bytes. The dashboard's visual richness (real game components, 100+ icons, layered textures) costs nothing at runtime — it's all static assets.
+
 ---
 
 ## 📌 Lessons
 
-- **Orchestration is a skill.** Directing agents with the right brief structure produces fundamentally better output than prompting harder.
-- **Verification loops are everything.** Visual self-gates, date-verified sources, contract tests against the real backend — the human's job is to build the loops, not write every line.
+- **Delegation is a skill.** The human's job is ideas and taste; the orchestration layer's job is turning them into briefs the agents can actually execute. Directing agents with the right brief structure produces fundamentally better output than prompting harder.
+- **Verification loops are everything.** Visual self-gates, date-verified sources, contract tests against the real backend — the loop exists so nothing ships unseen.
 - **Agents fail like juniors** (over-constraint paralysis, dated sources, no self-review) **and respond to the same fixes** — clear direction, good references, review checkpoints.
-- **The human sets taste.** Every "this is perfect" / "this is slop" call in this project's history was a human verdict that steered the next iteration.
+- **A pipeline that learns compounds.** The research agent's skills and memory grew across this project — every hard-won lesson became a reusable skill for the next task.
+- **The human sets taste.** Every "this is perfect" / "this is slop" call was a human verdict that steered the next iteration. The pipeline amplifies taste; it doesn't replace it.
 
 ---
 
-*Built with: Hermes Agent (Nous Research) · Google Antigravity CLI (gemini-3.7-flash-high) · opencode-go (deepseek-v4-flash) · a lot of headless Chrome screenshots · and one orchestrator who learned that the best AI workflow is a loop of brief → build → look → fix.*
+*Built with: Hermes Agent (Nous Research) as the orchestration layer · Google Antigravity CLI as the build platform · a custom multiplexed delegation pipeline with self-learning agent profiles · a lot of headless Chrome screenshots · and the loop: idea → brief → build → look → fix → ship.*
