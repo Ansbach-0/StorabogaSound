@@ -68,11 +68,13 @@ The design agent hand-built the game.s shop panel from screenshots — a "1:1 co
 The agent drifted into neon-teal cyberpunk. Deadlock is *warm*.
 **Fix:** Valve's decompiled CSS palette became **the law** — cream `#FFEFD7`, mint `#70F8C1`, gold `#FFED79` — with the instruction *"if a color isn't in the list, don't use it."*
 
-### 6. Infrastructure traps
-- the CLI account **quota ≠ eligibility** — two accounts showed 100% quota but failed Antigravity's eligibility check. Fix: verify with `the CLI models` before every dispatch.
-- CLI `--print-timeout 0` means **instant kill**, not "no timeout." Fix: use effectively-infinite timeouts, background dispatch, completion notifications.
-- **Git wasn't in the container** — the Dockerfile installed it for a build step, then *purged it*. Fix: removed git from the purge line, rebuilt the image, restarted — git is now permanent.
-
+### 6. The whole thing had to fit in 1GB of RAM
+The bot's home is a 1GB VPS — and that constraint killed every easy answer before we started. No Lavalink (a Java server we can't afford), no separate Node runtime, no WebSocket services with memory overhead. The architecture was forced into its final shape by the budget:
+- **One Python process** — discord.py + FastAPI + SSE + SQLite in a single process, no orphans
+- **React compiled to static files**, served in-process by FastAPI — no Node in production
+- **SSE instead of WebSockets** — server-push with a fraction of the overhead
+- **No external database** — aiosqlite, zero server processes
+The 1GB budget became a design tool: every layer of the stack is there because it *earned* its bytes. The dashboard's visual richness (real game components, 100+ icons, layered textures) costs nothing at runtime — it's all static assets.
 ---
 
 ## 📌 Lessons
