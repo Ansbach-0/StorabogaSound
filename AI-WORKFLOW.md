@@ -15,7 +15,7 @@
         ┌──────────────────────┼──────────────────────┐
         ▼                      ▼                      ▼
 ┌───────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│   HERMES      │    │      SIS         │    │     SPEEDY       │
+│   HERMES      │    │  DESIGN AGENT   │    │  RESEARCH AGENT  │
 │  (the brain)  │    │ (the worker)     │    │ (the researcher) │
 │ Orchestrates  │───▶│ Antigravity CLI  │    │ deepseek-v4-flash│
 │ agents,       │    │ gemini-3.7-flash │    │ via opencode-go  │
@@ -27,18 +27,18 @@
 
 | Role | Tool | Job |
 |---|---|---|
-| **The Brain** | [Hermes Agent](https://github.com/NousResearch/hermes-agent) (Nous Research) | Orchestration: writes goal-first briefs, dispatches work, watches agents in real-time ("spy cam" on file writes), runs verification loops, handles git/version control, and makes the calls the agents can't |
-| **The Worker** | [Google Antigravity CLI](https://antigravity.google) (`agy`) — agent **SIS**, `gemini-3.7-flash-high` | The actual design + code: studied references, built components, ran its own visual QA. Backed by a pool of Google AI Pro accounts with quota rotation |
-| **The Researcher** | Hermes profile **Speedy** — `deepseek-v4-flash` | Independent research: pulled Google's own prompting docs, sourced and **date-verified** 2026 game footage, wrote manifests — a second opinion the brain can't provide alone |
+| **The Brain** | [Hermes Agent](https://github.com/NousResearch/hermes-agent) (Nous Research) | Orchestration: writes goal-first briefs, dispatches work, watches agents in real-time (live file-write monitoring), runs verification loops, handles git/version control, and makes the calls the agents can't |
+| **The Worker** | [Google Antigravity CLI](https://antigravity.google) (`agy`) — **design agent**, `gemini-3.7-flash-high` | The actual design + code: studied references, built components, ran its own visual QA. Backed by a pool of Google AI Pro accounts with quota rotation |
+| **The Researcher** | **Research agent** — `deepseek-v4-flash` | Independent research: pulled Google's own prompting docs, sourced and **date-verified** 2026 game footage, wrote manifests — a second opinion the brain can't provide alone |
 
 ---
 
 ## 🏗️ How a Feature Actually Gets Built
 
 1. **Brief, not spec** — the orchestrator writes a *goal-first, freedom-preserving* brief: what the screen must be, which references to study, what to keep functional. Not a 5,000-word rule wall.
-2. **Reference = authority** — SIS is pointed at real source material (game frames, the live component playground, the actual npm packages) and told to study it with her own eyes before touching code.
-3. **Agent builds** — SIS explores, plans, writes code, and iterates.
-4. **Visual gate** — SIS screenshots her own work with headless Chrome and reviews it herself before declaring done. No more "I wrote it so it must look good."
+2. **Reference = authority** — the design agent is pointed at real source material (game frames, the live component playground, the actual npm packages) and told to study it with her own eyes before touching code.
+3. **Agent builds** — the design agent explores, plans, writes code, and iterates.
+4. **Visual gate** — the design agent screenshots its own work with headless Chrome and reviews it herself before declaring done. No more "I wrote it so it must look good."
 5. **Human review** — the orchestrator screenshots again, sends pixels to the human, and the human's verdict drives the next pass.
 6. **Ship** — version control, commit hygiene, push.
 
@@ -50,18 +50,18 @@ This is the part that matters — every one of these was a real failure we diagn
 
 ### 1. "Biggest AI slop I've seen in years" — the over-constraining trap
 The first UI attempt was **over-constrained**: a massive brief with endless do-nots. The agent burned its intelligence on rule-compliance and produced a generic dashboard with game-colored paint.
-**Fix:** Speedy researched Google's official Gemini/Antigravity prompting docs and found the documented failure mode: *"verbose or complex prompt engineering techniques designed for older models may cause the model to over-analyze."* We rewrote the brief system to be **goal-first, constraint-light, persona-with-voice** — and the agent's design quality jumped immediately.
+**Fix:** the research agent pulled Google's official Gemini/Antigravity prompting docs and found the documented failure mode: *"verbose or complex prompt engineering techniques designed for older models may cause the model to over-analyze."* We rewrote the brief system to be **goal-first, constraint-light, persona-with-voice** — and the agent's design quality jumped immediately.
 
 ### 2. Dated reference material
 The first screenshots were pre-*Old Gods* Deadlock — the game's UI had changed, and the agent faithfully replicated an outdated look.
-**Fix:** Speedy sourced **2026 community video tours** and — critically — **date-verified every video** (`yt-dlp --print upload_date`) and *rejected pre-2026 footage herself*. She extracted 42 curated frames across 7 screen types. The agent now studied the actual current game.
+**Fix:** the research agent sourced **2026 community video tours** and — critically — **date-verified every video** (`yt-dlp --print upload_date`) and *rejected pre-2026 footage herself*. She extracted 42 curated frames across 7 screen types. The agent now studied the actual current game.
 
 ### 3. The agent couldn't see its own work
 Screens shipped with detached buttons and clipped text because the agent never actually *looked* at its output.
 **Fix:** a hard **visual self-gate**: the agent screenshots every view with headless Chrome, opens the screenshots, reviews them against a checklist, fixes, re-screenshots, and may not report DONE until its own eyes pass.
 
 ### 4. Reimplementing what already existed
-SIS hand-built the game's shop panel from screenshots — a "1:1 copy" that looked right but wasn't the real thing.
+The design agent hand-built the game.s shop panel from screenshots — a "1:1 copy" that looked right but wasn't the real thing.
 **Fix:** we discovered the actual deadlock-ui ships as **published npm packages** (`@deadlock-api/ui-react` / `ui-core`). The hand-built imitation was deleted and replaced with the real web components — real JS behavior, real tooltips, real hover-scale.
 
 ### 5. "Too futuristic, colors don't match the game"
