@@ -1,10 +1,18 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { defineCustomElements } from "@deadlock-api/ui-core/loader";
+import { App } from "./App";
 import "./index.css";
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+defineCustomElements(window);
+
+const rootElement = document.getElementById("root");
+
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+}
+
