@@ -1,0 +1,5 @@
+# Vendored third-party game assets (Valve/Deadlock CSS, fonts, icons, textures).
+# These are not project source — keep them out of GitHub's language statistics
+# so the bar reflects the real Python + TypeScript codebase.
+frontend/public/assets/ linguist-vendored=true
+frontend/comp/ linguist-vendored=true
