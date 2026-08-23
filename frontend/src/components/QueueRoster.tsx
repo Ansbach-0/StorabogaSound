@@ -56,9 +56,19 @@ export const QueueRoster: React.FC<QueueRosterProps> = ({
             return (
               <div
                 key={track.id || `track-${idx}`}
+                role="button"
+                tabIndex={0}
                 onClick={() => onSelectTrack?.(track)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelectTrack?.(track);
+                  }
+                }}
                 className={`dl-slot group ${isActive ? "active" : ""}`}
                 title={`${track.title} - ${track.artist || "Unknown Artist"}`}
+                aria-label={`${isActive ? "Now playing: " : "Play: "}${track.title} by ${track.artist || "Unknown Artist"}`}
+                aria-current={isActive ? "true" : undefined}
               >
                 {/* Authentic Rising Deadlock Soul Flame Plume on Active Slot */}
                 {isActive && (

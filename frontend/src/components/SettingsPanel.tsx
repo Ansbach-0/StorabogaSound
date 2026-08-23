@@ -153,7 +153,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             LEFT COLUMN: CONSOLE RACK SELECTORS
             ======================================================================= */}
         <aside className="w-full lg:w-[28%] shrink-0 flex flex-col gap-4">
-          <div className="p-4 bg-[#141810]/95 border border-[#FFEFD7]/20 rounded-sm dl-panel shadow-[0_12px_28px_rgba(0,0,0,0.7)] flex flex-col gap-2.5">
+          <div role="tablist" aria-label="Console rack tabs" className="p-4 bg-[#141810]/95 border border-[#FFEFD7]/20 rounded-sm dl-panel shadow-[0_12px_28px_rgba(0,0,0,0.7)] flex flex-col gap-2.5">
             <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#FFEFD7]/50 px-1 pb-1 border-b border-[#FFEFD7]/10">
               CONSOLE RACKS
             </span>
@@ -163,6 +163,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               return (
                 <button
                   key={tab.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-label={tab.label}
                   onClick={() => setActiveTab(tab.id)}
                   className={`group relative w-full text-left p-3 rounded-xs border transition-all cursor-pointer flex items-center justify-between overflow-hidden transform ${
                     isActive
@@ -267,6 +270,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     max="100"
                     value={defaultVolume}
                     onChange={(e) => setDefaultVolume(Number(e.target.value))}
+                    aria-label="Master stream gain level"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={defaultVolume}
                     className="w-full dl-slider h-4 cursor-pointer"
                   />
 
@@ -286,7 +293,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Toggle 1: Auto Crossfade */}
                 <div
+                  role="switch"
+                  tabIndex={0}
+                  aria-checked={autoCrossfade}
+                  aria-label="Gapless auto-crossfade"
                   onClick={() => setAutoCrossfade(!autoCrossfade)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setAutoCrossfade(!autoCrossfade);
+                    }
+                  }}
                   className={`p-4 bg-[#141810] border rounded-sm dl-panel flex items-center justify-between gap-4 cursor-pointer transition-all duration-75 ${
                     autoCrossfade ? "border-[#5FE69E]/70 shadow-[0_0_16px_rgba(95,230,158,0.2)]" : "border-[#FFEFD7]/15 opacity-75"
                   }`}
@@ -326,7 +343,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
                 {/* Toggle 2: EBU R128 Normalization */}
                 <div
+                  role="switch"
+                  tabIndex={0}
+                  aria-checked={audioNormalization}
+                  aria-label="Loudness normalization"
                   onClick={() => setAudioNormalization(!audioNormalization)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setAudioNormalization(!audioNormalization);
+                    }
+                  }}
                   className={`p-4 bg-[#141810] border rounded-sm dl-panel flex items-center justify-between gap-4 cursor-pointer transition-all duration-75 ${
                     audioNormalization ? "border-[#5FE69E]/70 shadow-[0_0_16px_rgba(95,230,158,0.2)]" : "border-[#FFEFD7]/15 opacity-75"
                   }`}
@@ -365,7 +392,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
                 {/* Toggle 3: Streamer Safe Mode */}
                 <div
+                  role="switch"
+                  tabIndex={0}
+                  aria-checked={streamerSafe}
+                  aria-label="Streamer safe mode"
                   onClick={() => setStreamerSafe(!streamerSafe)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setStreamerSafe(!streamerSafe);
+                    }
+                  }}
                   className={`p-4 bg-[#141810] border rounded-sm dl-panel flex items-center justify-between gap-4 cursor-pointer transition-all duration-75 ${
                     streamerSafe ? "border-[#5FE69E]/70 shadow-[0_0_16px_rgba(95,230,158,0.2)]" : "border-[#FFEFD7]/15 opacity-75"
                   }`}
@@ -404,7 +441,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
                 {/* Toggle 4: 48kHz Sinc Reconstruction */}
                 <div
+                  role="switch"
+                  tabIndex={0}
+                  aria-checked={highFidelity}
+                  aria-label="High-fidelity resampling"
                   onClick={() => setHighFidelity(!highFidelity)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setHighFidelity(!highFidelity);
+                    }
+                  }}
                   className={`p-4 bg-[#141810] border rounded-sm dl-panel flex items-center justify-between gap-4 cursor-pointer transition-all duration-75 ${
                     highFidelity ? "border-[#5FE69E]/70 shadow-[0_0_16px_rgba(95,230,158,0.2)]" : "border-[#FFEFD7]/15 opacity-75"
                   }`}
@@ -479,11 +526,13 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     placeholder="e.g. 109283746592837465 (or blank for public)"
                     value={djRoleId}
                     onChange={(e) => setDjRoleId(e.target.value)}
+                    aria-label="Discord DJ Role Snowflake ID"
                     className="w-full bg-[#0e110b] border border-[#8A55B3]/40 px-4 py-2.5 font-mono text-sm text-[#FFEFD7] placeholder-[#FFEFD7]/30 rounded-xs focus:outline-none focus:border-[#5FE69E] transition-all"
                   />
                   {djRoleId && (
                     <button
                       onClick={() => setDjRoleId("")}
+                      aria-label="Clear DJ Role ID"
                       className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-[#FFEFD7]/60 hover:text-[#FF410D] cursor-pointer"
                     >
                       CLEAR KEY
@@ -538,6 +587,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     <button
                       key={rate}
                       onClick={() => setCodecBitrate(rate)}
+                      aria-pressed={codecBitrate === rate}
+                      aria-label={`Set Opus bitrate to ${rate} kbps`}
                       className={`p-3 rounded-xs border font-mono text-center cursor-pointer transition-all ${
                         codecBitrate === rate
                           ? "bg-[#FFED79] text-[#10130D] font-black border-white shadow-[0_0_16px_rgba(255,237,121,0.6)]"

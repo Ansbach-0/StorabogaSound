@@ -263,12 +263,15 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
           ========================================================================= */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 bg-[#141810]/95 border border-[#FFEFD7]/20 rounded-sm dl-panel shadow-[0_12px_28px_rgba(0,0,0,0.75)]">
         {/* Source Filter Buttons */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+        <div role="tablist" aria-label="Archive source filter tabs" className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
           {sourceFilters.map((f) => {
             const isActive = activeSourceFilter === f.id;
             return (
               <button
                 key={f.id}
+                role="tab"
+                aria-selected={isActive}
+                aria-label={`Filter by ${f.label}`}
                 onClick={() => setActiveSourceFilter(f.id)}
                 className={`px-3.5 py-1.5 rounded-xs font-mono text-xs font-black tracking-wider uppercase transition-all cursor-pointer flex items-center gap-1.5 ${
                   isActive
@@ -296,6 +299,7 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
               placeholder="Search title, artist, requester..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search title, artist, or requester"
               className="w-full bg-[#0e110b] border border-[#FFEFD7]/25 px-3.5 py-1.5 pl-8 font-body text-xs text-[#FFEFD7] placeholder-[#FFEFD7]/40 rounded-xs focus:outline-none focus:border-[#ffc533] focus:shadow-[0_0_12px_rgba(255,197,51,0.3)] transition-all"
             />
             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs opacity-50">
@@ -304,6 +308,7 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
+                aria-label="Clear search query"
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 font-mono text-xs text-[#FFEFD7]/60 hover:text-[#FF410D]"
               >
                 ✕
@@ -320,6 +325,7 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
                 setSortBy(val);
               }
             }}
+            aria-label="Sort archive records"
             className="bg-[#0e110b] text-[#FFED79] border border-[#FFEFD7]/25 px-3 py-1.5 rounded-xs font-mono text-xs focus:outline-none focus:border-[#ffc533] cursor-pointer"
           >
             <option value="recent">SORT: RECENT</option>
@@ -442,6 +448,7 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
                         onClick={() => onPlayTrack?.(track)}
                         className="dl-button dl-button-amber text-xs font-black px-3.5 py-1.5 flex items-center gap-1.5 shrink-0 shadow-md cursor-pointer group-hover:scale-102"
                         title={`Replay ${track.title}`}
+                        aria-label={`Replay ${track.title}`}
                       >
                         <span>▶</span>
                         <span>REPLAY</span>
@@ -508,6 +515,7 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
             {filteredTracks.length > 0 && onPlayTrack && (
               <button
                 onClick={() => onPlayTrack(filteredTracks[0])}
+                aria-label="Replay most recent record"
                 className="relative z-10 dl-button dl-button-amber w-full text-xs font-black py-2.5 shadow-lg tracking-wider cursor-pointer"
               >
                 REPLAY MOST RECENT RECORD

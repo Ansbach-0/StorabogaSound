@@ -58,27 +58,40 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
     let targetX = 0;
     let targetY = 0;
     let currentX = 0;
     let currentY = 0;
+    let isRunning = false;
     let animId: number;
 
     const handleMouseMove = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
       targetX = (e.clientX - innerWidth / 2) / (innerWidth / 2);
       targetY = (e.clientY - innerHeight / 2) / (innerHeight / 2);
+      if (!isRunning) {
+        isRunning = true;
+        animId = requestAnimationFrame(updateParallax);
+      }
     };
 
     const updateParallax = () => {
       currentX += (targetX - currentX) * 0.08;
       currentY += (targetY - currentY) * 0.08;
       setMousePos({ x: currentX, y: currentY });
-      animId = requestAnimationFrame(updateParallax);
+
+      if (Math.abs(targetX - currentX) > 0.001 || Math.abs(targetY - currentY) > 0.001) {
+        animId = requestAnimationFrame(updateParallax);
+      } else {
+        isRunning = false;
+      }
     };
 
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    animId = requestAnimationFrame(updateParallax);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
@@ -251,7 +264,14 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
               {formatTime(track.duration_ms)}
             </span>
           </div>
-          <div className="dl-progress-track rounded-xs">
+          <div
+            role="progressbar"
+            aria-label="Track playback progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(progressPercent)}
+            className="dl-progress-track rounded-xs"
+          >
             <div
               className="dl-progress-fill"
               style={{
@@ -266,7 +286,11 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
         <div className="relative flex items-center justify-end gap-4">
           {/* Volume Popup Modal / Popover */}
           {showVolumePopup && (
-            <div className="absolute bottom-16 right-0 bg-[#10130D] border border-[#70F8C1]/60 p-3.5 shadow-2xl rounded-sm z-50 flex items-center gap-3">
+            <div
+              role="region"
+              aria-label="Volume Adjuster"
+              className="absolute bottom-16 right-0 bg-[#10130D] border border-[#70F8C1]/60 p-3.5 shadow-2xl rounded-sm z-50 flex items-center gap-3"
+            >
               <span className="font-mono text-xs font-bold text-[#FFED79]">VOL</span>
               <input
                 type="range"
@@ -275,6 +299,10 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
                 value={volume}
                 onChange={(e) => onVolumeChange(Number(e.target.value))}
                 className="dl-slider w-28"
+                aria-label="Master Volume Percentage"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={volume}
                 autoFocus
               />
               <span className="font-mono text-xs font-bold text-[#FFEFD7] min-w-[32px] text-right">
@@ -288,8 +316,9 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
             onClick={onPause}
             className="dl-ability-btn dl-ability-btn-mint group flex items-center justify-center"
             title="Pause / Resume Playback [SPACE]"
+            aria-label="Pause or Resume Playback (SPACE)"
           >
-            <DeadlockIcon name="pause_icon" isPng className="w-5 h-5 text-[#10130D]" alt="Pause" />
+            <DeadlockIcon name="pause_icon" isPng className="w-5 h-5 text-[#10130D]" alt="" />
             <span className="dl-ability-key">SPACE</span>
           </button>
 
@@ -298,8 +327,9 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
             onClick={onSkip}
             className="dl-ability-btn group flex items-center justify-center"
             title="Skip to Next Track [S]"
+            aria-label="Skip to Next Track (S)"
           >
-            <DeadlockIcon name="jump_skip3_icon" isPng className="w-5 h-3.5 text-[#FFEFD7]" alt="Skip Track" />
+            <DeadlockIcon name="jump_skip3_icon" isPng className="w-5 h-3.5 text-[#FFEFD7]" alt="" />
             <span className="dl-ability-key">S</span>
           </button>
 
@@ -308,11 +338,13 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
             onClick={() => setIsLooping(!isLooping)}
             className={`dl-ability-btn group flex items-center justify-center ${isLooping ? "dl-ability-btn-mint" : ""}`}
             title="Toggle Repeat"
+            aria-label="Toggle Repeat Mode"
+            aria-pressed={isLooping}
           >
             <DeadlockIcon
               name="icon_infinite"
               className={`w-5 h-5 ${isLooping ? "text-[#10130D]" : "text-[#FFEFD7]"}`}
-              alt="Repeat"
+              alt=""
             />
             <span className="dl-ability-key">R</span>
           </button>
@@ -322,11 +354,12 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
             onClick={onLeave}
             className="dl-ability-btn dl-ability-btn-danger group flex items-center justify-center"
             title="Leave Voice Channel"
+            aria-label="Leave Voice Channel"
           >
             <DeadlockIcon
               name="death"
               className="w-5 h-5 text-[#FF410D] group-hover:text-white"
-              alt="Leave Voice"
+              alt=""
             />
             <span className="dl-ability-key">L</span>
           </button>
@@ -336,12 +369,14 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
             onClick={() => setShowVolumePopup(!showVolumePopup)}
             className={`dl-ability-btn group flex items-center justify-center ${showVolumePopup ? "dl-ability-btn-mint" : ""}`}
             title={`Volume: ${volume}%`}
+            aria-label={`Volume: ${volume}%. Click to adjust.`}
+            aria-expanded={showVolumePopup}
           >
             <DeadlockIcon
               name="voice_chat_icon"
               isPng
               className={`w-5 h-4.5 ${showVolumePopup ? "text-[#10130D]" : "text-[#FFEFD7]"}`}
-              alt="Volume"
+              alt=""
             />
             <span className="dl-ability-key">{volume}%</span>
           </button>
