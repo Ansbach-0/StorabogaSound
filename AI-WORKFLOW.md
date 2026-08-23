@@ -23,7 +23,7 @@
       ┌──────────────────┐          ┌──────────────────────┐
       │   BUILD AGENT    │          │    RESEARCH AGENT    │
       │  Antigravity CLI │          │  multiplexed profile │
-      │  (worker)   │          │  (custom delegation  │
+      │   (worker)       │          │  (custom delegation  │
       │  design + code   │          │   pipeline — sub-    │
       │  visual self-gate│          │   agents learn and   │
       │  account rotation│          │   improve over time) │
@@ -34,7 +34,7 @@
 |---|---|---|
 | **The Human** | — | Ideas, direction, taste. Every "this is slop" / "this is perfect" verdict in this project's history came from here |
 | **Orchestration Layer** | [Hermes Agent](https://github.com/NousResearch/hermes-agent) (Nous Research) | Acts as a **second brain**: turns ideas into goal-first briefs, dispatches work, monitors agents in real-time (live file-write monitoring), runs verification loops, handles version control, and ships. The human never touches the delegation mechanics |
-| **Build Agent** | [Google Antigravity CLI](https://antigravity.google) (the CLI) | Design + code: studies references, builds components, screenshots its own work and reviews it before declaring done. Backed by a pool of accounts with quota rotation |
+| **Build Agent** | [Google Antigravity CLI](https://antigravity.google) | Design + code: studies references, builds components, screenshots its own work and reviews it before declaring done. Backed by a pool of accounts with quota rotation |
 | **Research Agent** | Multiplexed profile in the custom delegation pipeline | Independent research and verification. Runs as its own persistent profile — **unlike stock subagents, it keeps its own skills and memory and gets measurably better over time**: it learned the video→frame→reference-pack workflow as a skill, updated its memory with new principles after every task, and applied them on the next one |
 
 **Model-agnostic by design:** the pipeline describes *roles and platforms*, not models. The orchestration layer, the build agent, and the research agent can each run on whatever model fits the job — the architecture doesn't care. Models are a swappable detail, the delegation system is the point.
