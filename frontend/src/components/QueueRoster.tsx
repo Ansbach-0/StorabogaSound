@@ -21,9 +21,9 @@ export const QueueRoster: React.FC<QueueRosterProps> = ({
   currentTrackId,
   onSelectTrack,
 }) => {
-  // Authentic 6-column hero selection roster wall with minimum 24-30 slots (4-5 rows of 6)
+  // Authentic 6-column hero selection roster wall (2 rows of 6 baseline on desktop, 1 row on mobile)
   const COLS = 6;
-  const MIN_SLOTS = 24;
+  const MIN_SLOTS = 12;
   const totalSlotCount = Math.max(MIN_SLOTS, Math.ceil(Math.max(tracks.length, 1) / COLS) * COLS);
   const emptySlotsCount = Math.max(0, totalSlotCount - tracks.length);
 
@@ -40,7 +40,7 @@ export const QueueRoster: React.FC<QueueRosterProps> = ({
           </span>
         </div>
 
-        <div className="hidden sm:flex items-center gap-1 font-mono text-[10px] text-[#FFEFD7]/50 uppercase tracking-wider">
+        <div className="hidden sm:flex items-center gap-1 font-mono text-[11px] text-[#FFEFD7]/50 uppercase tracking-wider">
           <span>ROSTER WALL // 6-COL</span>
         </div>
       </div>
@@ -107,17 +107,17 @@ export const QueueRoster: React.FC<QueueRosterProps> = ({
 
                 {/* "PLAYING" Badge on selected */}
                 {isActive && (
-                  <div className="absolute top-1 left-1 bg-[#70F8C1] text-[#10130D] font-mono text-[9px] font-black px-1.5 py-0.2 rounded-xs shadow-md z-4 uppercase tracking-wider">
+                  <div className="absolute top-1 left-1 bg-[#70F8C1] text-[#10130D] font-mono text-[10px] font-black px-1.5 py-0.2 rounded-xs shadow-md z-4 uppercase tracking-wider">
                     PLAYING
                   </div>
                 )}
 
                 {/* Bottom Overlay with Duration & Source */}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#10130D]/95 via-[#10130D]/70 to-transparent p-1.5 pt-3.5 flex items-end justify-between z-3 pointer-events-none">
-                  <span className="font-mono text-[10px] font-bold text-[#FFEFD7] leading-none">
+                  <span className="font-mono text-[11px] font-bold text-[#FFEFD7] leading-none">
                     {formatDuration(track.duration_ms)}
                   </span>
-                  <span className="font-mono text-[8.5px] font-bold text-[#FFED79] uppercase leading-none opacity-90">
+                  <span className="font-mono text-[10px] font-bold text-[#FFED79] uppercase leading-none opacity-90">
                     {track.source === "youtube" ? "YT" : track.source === "soundcloud" ? "SC" : track.source === "bandcamp" ? "BC" : "AUD"}
                   </span>
                 </div>
@@ -125,23 +125,25 @@ export const QueueRoster: React.FC<QueueRosterProps> = ({
             );
           })}
 
-          {/* Empty / Reserved Hero Slots to fill the 6-column roster */}
+          {/* Empty / Reserved Hero Slots to fill the roster */}
           {Array.from({ length: emptySlotsCount }).map((_, i) => {
             const slotNum = tracks.length + i + 1;
+            // Hide excessive empty slots on mobile viewports (< sm) to prevent scrolling walls
+            const isExtraMobile = i >= 3;
             return (
               <div
                 key={`empty-slot-${i}`}
-                className="dl-slot empty-slot flex flex-col items-center justify-center p-1.5 relative"
+                className={`dl-slot empty-slot flex flex-col items-center justify-center p-1.5 relative ${isExtraMobile ? "hidden sm:flex" : "flex"}`}
               >
                 {/* Subtle occult center diamond glyph */}
                 <div className="w-3 h-3 border border-[#FFEFD7]/20 transform rotate-45 mb-1 opacity-60" />
-                <span className="font-mono text-[10px] text-[#FFEFD7]/30 font-bold">
+                <span className="font-mono text-[11px] text-[#FFEFD7]/30 font-bold">
                   #{slotNum < 10 ? `0${slotNum}` : slotNum}
                 </span>
 
-                {/* Deadlock HUD Locked Control Point Icon in corner for locked slots */}
-                <div className="absolute bottom-1.5 right-1.5 opacity-40">
-                  <DeadlockIcon name="locked_icon" isPng className="w-3.5 h-3.5 text-[#FFEFD7]" alt="Locked Slot" />
+                {/* Subtle empty slot indicator icon */}
+                <div className="absolute bottom-1.5 right-1.5 opacity-30">
+                  <DeadlockIcon name="locked_icon" isPng className="w-3 h-3 text-[#FFEFD7]" alt="Reserved Slot" />
                 </div>
               </div>
             );

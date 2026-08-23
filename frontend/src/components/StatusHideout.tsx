@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import type { BotStatus } from "../types";
 import { DeadlockIcon } from "./DeadlockIcon";
 
@@ -34,16 +34,7 @@ function formatUptime(seconds: number) {
 }
 
 export const StatusHideout: React.FC<StatusHideoutProps> = ({ status: propStatus, onBack }) => {
-  const [pulseCount, setPulseCount] = useState(0);
-
   const status = propStatus || DEFAULT_STATUS;
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setPulseCount((p) => p + 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const memoryLimit = status.memory_limit_mb || 1024;
   const memoryPercent = Math.min(100, Math.round((status.memory_mb / memoryLimit) * 100));
@@ -61,7 +52,7 @@ export const StatusHideout: React.FC<StatusHideoutProps> = ({ status: propStatus
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex flex-col">
             <div className="flex items-center gap-3 mb-1">
-              <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#10130D] bg-[#70F8C1] px-2.5 py-0.5 transform -skew-x-6 flex items-center gap-1.5 shadow-md">
+              <span className="font-mono text-[11px] font-black uppercase tracking-widest text-[#10130D] bg-[#70F8C1] px-2.5 py-0.5 transform -skew-x-6 flex items-center gap-1.5 shadow-md">
                 <DeadlockIcon name="icon_spirit" className="w-3.5 h-3.5 text-[#10130D]" />
                 <span>NODE TELEMETRY</span>
               </span>
@@ -84,7 +75,7 @@ export const StatusHideout: React.FC<StatusHideoutProps> = ({ status: propStatus
             <div className="flex items-center gap-2.5 px-3 py-1.5 bg-[#10130D] border-2 border-[#FFED79] rounded-sm shadow-[0_0_20px_rgba(255,237,121,0.2)] transform -rotate-1">
               <DeadlockIcon name="damage_crit" className="w-4 h-4 text-[#FFED79]" />
               <div className="flex flex-col">
-                <span className="font-mono text-[9px] font-black text-[#FFED79] uppercase tracking-widest">
+                <span className="font-mono text-[11px] font-black text-[#FFED79] uppercase tracking-widest">
                   GATEWAY STATUS
                 </span>
                 <span className="font-display text-base font-bold text-[#FFEFD7] leading-none">
@@ -126,19 +117,19 @@ export const StatusHideout: React.FC<StatusHideoutProps> = ({ status: propStatus
           <div className="flex flex-col gap-2 my-1">
             <div className="grid grid-cols-4 gap-1.5 text-center font-mono">
               <div className="bg-[#10130D] p-2 border border-[#FFEFD7]/10 rounded-xs">
-                <span className="text-[9px] text-[#FFEFD7]/50 block">DAYS</span>
+                <span className="text-[11px] text-[#FFEFD7]/50 block">DAYS</span>
                 <span className="text-base font-bold text-[#FFED79]">{uptimeData.days}</span>
               </div>
               <div className="bg-[#10130D] p-2 border border-[#FFEFD7]/10 rounded-xs">
-                <span className="text-[9px] text-[#FFEFD7]/50 block">HOURS</span>
+                <span className="text-[11px] text-[#FFEFD7]/50 block">HOURS</span>
                 <span className="text-base font-bold text-[#FFED79]">{uptimeData.hours}</span>
               </div>
               <div className="bg-[#10130D] p-2 border border-[#FFEFD7]/10 rounded-xs">
-                <span className="text-[9px] text-[#FFEFD7]/50 block">MINS</span>
+                <span className="text-[11px] text-[#FFEFD7]/50 block">MINS</span>
                 <span className="text-base font-bold text-[#FFED79]">{uptimeData.minutes}</span>
               </div>
               <div className="bg-[#10130D] p-2 border border-[#FFEFD7]/10 rounded-xs">
-                <span className="text-[9px] text-[#FFEFD7]/50 block">SECS</span>
+                <span className="text-[11px] text-[#FFEFD7]/50 block">SECS</span>
                 <span className="text-base font-bold text-[#70F8C1]">{uptimeData.secs}</span>
               </div>
             </div>
@@ -315,21 +306,22 @@ export const StatusHideout: React.FC<StatusHideoutProps> = ({ status: propStatus
         </div>
 
         {/* Real-time Smooth Analog Audio Activity Bars */}
-        <div className="h-14 flex items-center justify-between gap-1.5 px-2 bg-[#10130D] border border-[#FFEFD7]/15 rounded-xs">
-          {Array.from({ length: 32 }).map((_, i) => {
-            const height = Math.abs(Math.sin(pulseCount * 0.5 + i * 0.25)) * 90;
-            return (
-              <div
-                key={i}
-                className="flex-1 rounded-xs transition-all duration-150"
-                style={{
-                  height: `${Math.max(10, height)}%`,
-                  backgroundColor: i % 4 === 0 ? "#FFED79" : "#70F8C1",
-                  opacity: i % 2 === 0 ? 0.9 : 0.6,
-                }}
-              />
-            );
-          })}
+        <div
+          className="h-14 flex items-end justify-between gap-1.5 px-2 pb-1 bg-[#10130D] border border-[#FFEFD7]/15 rounded-xs"
+          aria-hidden="true"
+        >
+          {Array.from({ length: 32 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex-1 rounded-xs animate-dl-eq h-full"
+              style={{
+                backgroundColor: i % 4 === 0 ? "#FFED79" : "#70F8C1",
+                opacity: i % 2 === 0 ? 0.9 : 0.6,
+                animationDelay: `${((i * 70) % 1200)}ms`,
+                animationDuration: `${0.8 + ((i * 17) % 8) * 0.1}s`,
+              }}
+            />
+          ))}
         </div>
       </div>
 
@@ -338,7 +330,7 @@ export const StatusHideout: React.FC<StatusHideoutProps> = ({ status: propStatus
           ========================================================================= */}
       <div className="p-4 bg-[#10130D] border border-[#FFEFD7]/15 rounded-sm dl-panel flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono text-xs text-[#FFEFD7]/75 shadow-lg">
         <div className="flex items-center gap-3">
-          <span className="px-2 py-0.5 bg-[#FFED79] text-[#10130D] font-black text-[10px] uppercase tracking-wider rounded-xs">
+          <span className="px-2 py-0.5 bg-[#FFED79] text-[#10130D] font-black text-[11px] uppercase tracking-wider rounded-xs">
             LIVE HEARTBEAT
           </span>
           <span className="truncate">

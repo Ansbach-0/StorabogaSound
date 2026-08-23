@@ -52,6 +52,8 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
 }) => {
   const [showVolumePopup, setShowVolumePopup] = useState<boolean>(false);
   const [isLooping, setIsLooping] = useState<boolean>(false);
+  const [confirmLeave, setConfirmLeave] = useState<boolean>(false);
+  const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Parallax mouse coordinates
   const containerRef = useRef<HTMLDivElement>(null);
@@ -275,7 +277,7 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
             <div
               className="dl-progress-fill"
               style={{
-                width: `${progressPercent}%`,
+                transform: `scaleX(${progressPercent / 100})`,
                 background: `linear-gradient(90deg, #5fe69e 0%, ${accentColor} 80%, #99ffd6 100%)`,
               }}
             />
@@ -314,7 +316,7 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
           {/* Ability 1: Play / Pause */}
           <button
             onClick={onPause}
-            className="dl-ability-btn dl-ability-btn-mint group flex items-center justify-center"
+            className="dl-ability-btn dl-ability-btn-mint group flex items-center justify-center cursor-pointer"
             title="Pause / Resume Playback [SPACE]"
             aria-label="Pause or Resume Playback (SPACE)"
           >
@@ -325,7 +327,7 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
           {/* Ability 2: Skip Track */}
           <button
             onClick={onSkip}
-            className="dl-ability-btn group flex items-center justify-center"
+            className="dl-ability-btn group flex items-center justify-center cursor-pointer"
             title="Skip to Next Track [S]"
             aria-label="Skip to Next Track (S)"
           >
@@ -336,7 +338,7 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
           {/* Ability 3: Loop / Replay */}
           <button
             onClick={() => setIsLooping(!isLooping)}
-            className={`dl-ability-btn group flex items-center justify-center ${isLooping ? "dl-ability-btn-mint" : ""}`}
+            className={`dl-ability-btn group flex items-center justify-center cursor-pointer ${isLooping ? "dl-ability-btn-mint" : ""}`}
             title="Toggle Repeat"
             aria-label="Toggle Repeat Mode"
             aria-pressed={isLooping}
@@ -349,20 +351,38 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
             <span className="dl-ability-key">R</span>
           </button>
 
-          {/* Ability 4: Disconnect / Leave Voice */}
-          <button
-            onClick={onLeave}
-            className="dl-ability-btn dl-ability-btn-danger group flex items-center justify-center"
-            title="Leave Voice Channel"
-            aria-label="Leave Voice Channel"
-          >
-            <DeadlockIcon
-              name="death"
-              className="w-5 h-5 text-[#FF410D] group-hover:text-white"
-              alt=""
-            />
-            <span className="dl-ability-key">L</span>
-          </button>
+          {/* Ability 4: Disconnect / Leave Voice (Guarded with 2-step confirmation) */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                if (!confirmLeave) {
+                  setConfirmLeave(true);
+                  if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
+                  confirmTimerRef.current = setTimeout(() => setConfirmLeave(false), 3500);
+                  return;
+                }
+                setConfirmLeave(false);
+                if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
+                onLeave();
+              }}
+              className={`dl-ability-btn dl-ability-btn-danger group flex items-center justify-center cursor-pointer ${confirmLeave ? "ring-2 ring-[#FF410D] animate-pulse bg-[#FF410D]/30" : ""}`}
+              title={confirmLeave ? "Click again to confirm disconnect" : "Leave Voice Channel"}
+              aria-label={confirmLeave ? "Confirm Disconnecting from Voice Channel" : "Leave Voice Channel"}
+            >
+              <DeadlockIcon
+                name="death"
+                className="w-5 h-5 text-[#FF410D] group-hover:text-white"
+                alt=""
+              />
+              <span className="dl-ability-key">{confirmLeave ? "CONFIRM" : "L"}</span>
+            </button>
+            {confirmLeave && (
+              <div className="absolute bottom-14 right-0 whitespace-nowrap bg-[#10130D] border border-[#FF410D] px-2.5 py-1 font-mono text-[11px] font-bold text-[#FF410D] shadow-2xl z-50 animate-fadeIn">
+                CLICK AGAIN TO LEAVE
+                <div className="absolute right-4 -bottom-1 w-2 h-2 bg-[#10130D] border-r border-b border-[#FF410D] transform rotate-45" />
+              </div>
+            )}
+          </div>
 
           {/* Ability 5: Volume Control Dial */}
           <button

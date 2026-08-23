@@ -93,13 +93,13 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex flex-col">
             <div className="flex items-center gap-3 mb-1">
-              <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#10130D] bg-[#5FE69E] px-2.5 py-0.5 transform -skew-x-6 flex items-center gap-1.5 shadow-md">
+              <span className="font-mono text-[11px] font-black uppercase tracking-widest text-[#10130D] bg-[#5FE69E] px-2.5 py-0.5 transform -skew-x-6 flex items-center gap-1.5 shadow-md">
                 <DeadlockIcon name="armor_spirit" className="w-3.5 h-3.5 text-[#10130D]" />
                 <span>CALIBRATION CONSOLE</span>
               </span>
               <span className="font-mono text-xs text-[#FFED79] flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#5FE69E] animate-ping" />
-                READY
+                SYSTEM DSP ACTIVE
               </span>
             </div>
 
@@ -108,28 +108,22 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             </h1>
 
             <p className="mt-2 text-xs font-body text-[#FFEFD7]/70">
-              Hardware stream gain, DSP filters, and access controls.
+              DSP audio engine parameters, master stream gain, and security credentials.
             </p>
           </div>
 
           <div className="flex items-center gap-3 self-start lg:self-center">
-            {saveMessage ? (
-              <span className="font-mono text-xs font-black uppercase text-[#5FE69E] bg-[#10130D] px-4 py-2 border-2 border-[#5FE69E] shadow-[0_0_20px_#5FE69E] animate-pulse">
-                {saveMessage}
-              </span>
-            ) : (
-              <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-[#10130D] border-2 border-[#5FE69E]/60 rounded-sm shadow-[0_0_20px_rgba(95,230,158,0.25)] transform rotate-1">
-                <DeadlockIcon name="ammo" className="w-5 h-5 text-[#5FE69E]" />
-                <div className="flex flex-col">
-                  <span className="font-mono text-[10px] font-black text-[#5FE69E] uppercase tracking-widest">
-                    OUTPUT GAIN
-                  </span>
-                  <span className="font-display text-lg font-bold text-[#FFEFD7] leading-none">
-                    {defaultVolume}% ({dbValue} dB)
-                  </span>
-                </div>
+            <div className="flex items-center gap-2.5 px-3 py-1.5 bg-[#10130D] border-2 border-[#5FE69E] rounded-sm shadow-[0_0_20px_rgba(95,230,158,0.25)] transform -rotate-1">
+              <DeadlockIcon name="ammo" className="w-5 h-5 text-[#5FE69E]" />
+              <div className="flex flex-col">
+                <span className="font-mono text-[11px] font-black text-[#5FE69E] uppercase tracking-widest">
+                  OUTPUT GAIN
+                </span>
+                <span className="font-display text-lg font-bold text-[#FFEFD7] leading-none">
+                  {defaultVolume}% ({dbValue} dB)
+                </span>
               </div>
-            )}
+            </div>
 
             {onBack && (
               <button
@@ -146,7 +140,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       </div>
 
       {/* =========================================================================
-          MAIN CONSOLE CANVAS: 2-COLUMN INDUSTRIAL FACEPLATE
+          MAIN CALIBRATION CONSOLE INTERFACE
           ========================================================================= */}
       <div className="flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
         {/* =======================================================================
@@ -154,7 +148,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             ======================================================================= */}
         <aside className="w-full lg:w-[28%] shrink-0 flex flex-col gap-4">
           <div role="tablist" aria-label="Console rack tabs" className="p-4 bg-[#141810]/95 border border-[#FFEFD7]/20 rounded-sm dl-panel shadow-[0_12px_28px_rgba(0,0,0,0.7)] flex flex-col gap-2.5">
-            <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#FFEFD7]/50 px-1 pb-1 border-b border-[#FFEFD7]/10">
+            <span className="font-mono text-[11px] font-black uppercase tracking-widest text-[#FFEFD7]/50 px-1 pb-1 border-b border-[#FFEFD7]/10">
               CONSOLE RACKS
             </span>
 
@@ -181,7 +175,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   </div>
 
                   <span
-                    className={`font-mono text-[9px] font-black px-1.5 py-0.5 rounded-xs uppercase ${
+                    className={`font-mono text-[11px] font-black px-1.5 py-0.5 rounded-xs uppercase ${
                       isActive ? "bg-[#10130D] text-[#5FE69E]" : "bg-[#10130D] text-[#FFED79]"
                     }`}
                   >
@@ -194,7 +188,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
           {/* Machine Calibration Status Readout */}
           <div className="p-4 bg-[#12150e] border border-[#FFEFD7]/20 rounded-sm dl-panel flex flex-col gap-3 font-mono text-xs text-[#FFEFD7]/70">
-            <div className="flex items-center justify-between pb-1 border-b border-[#FFEFD7]/10 text-[10px] text-[#FFED79]">
+            <div className="flex items-center justify-between pb-1 border-b border-[#FFEFD7]/10 text-[11px] text-[#FFED79]">
               <span className="font-black uppercase tracking-wider">CHASSIS DIAGNOSTICS</span>
               <span className="text-[#70F8C1]">OK</span>
             </div>
@@ -231,7 +225,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               <div className="p-6 bg-[#161a12] border border-[#5FE69E]/50 rounded-sm dl-panel flex flex-col gap-6 shadow-[0_16px_36px_rgba(0,0,0,0.85)]">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#FFEFD7]/15">
                   <div>
-                    <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#10130D] bg-[#5FE69E] px-2 py-0.5 rounded-xs">
+                    <span className="font-mono text-[11px] font-black uppercase tracking-widest text-[#10130D] bg-[#5FE69E] px-2 py-0.5 rounded-xs">
                       GAIN STAGE
                     </span>
                     <h3 className="font-display text-2xl font-bold text-[#FFEFD7] deadlock-hero-title mt-1">
@@ -242,7 +236,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   {/* VU Level Readout */}
                   <div className="flex items-center gap-3 bg-[#10130D] px-3.5 py-2 border border-[#5FE69E]/40 rounded-xs font-mono">
                     <div className="flex flex-col items-end">
-                      <span className="text-[9px] text-[#5FE69E] font-black uppercase">CALIBRATION LEVEL</span>
+                      <span className="text-[11px] text-[#5FE69E] font-black uppercase">CALIBRATION LEVEL</span>
                       <span className="text-sm font-bold text-[#FFEFD7]">{defaultVolume}% ({dbValue} dB)</span>
                     </div>
                     <div className="w-3 h-8 bg-[#181c14] border border-[#5FE69E]/40 rounded-xs flex flex-col justify-end p-0.5">
@@ -278,11 +272,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   />
 
                   {/* Machined Calibration Scale Ticks */}
-                  <div className="flex justify-between px-1 text-[9px] font-mono text-[#FFEFD7]/40 border-t border-[#FFEFD7]/10 pt-1">
+                  <div className="flex justify-between px-1 text-[11px] font-mono text-[#FFEFD7]/40 border-t border-[#FFEFD7]/10 pt-1">
                     {["0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"].map((pct) => (
                       <span key={pct} className="flex flex-col items-center">
                         <span>|</span>
-                        <span className="text-[8px]">{pct}</span>
+                        <span className="text-[10px]">{pct}</span>
                       </span>
                     ))}
                   </div>
@@ -309,7 +303,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   }`}
                 >
                   <div className="flex flex-col gap-1">
-                    <span className="font-mono text-[9px] font-black uppercase text-[#FFED79] tracking-wider">
+                    <span className="font-mono text-[11px] font-black uppercase text-[#FFED79] tracking-wider">
                       DSP-01
                     </span>
                     <h4 className="font-display text-lg font-bold text-[#FFEFD7]">
@@ -335,7 +329,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         }`}
                       />
                     </div>
-                    <span className="font-mono text-[8px] text-[#FFEFD7]/60 font-bold uppercase">
+                    <span className="font-mono text-[11px] text-[#FFEFD7]/60 font-bold uppercase">
                       {autoCrossfade ? "ENGAGED" : "BYPASS"}
                     </span>
                   </div>
@@ -359,7 +353,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   }`}
                 >
                   <div className="flex flex-col gap-1">
-                    <span className="font-mono text-[9px] font-black uppercase text-[#FFED79] tracking-wider">
+                    <span className="font-mono text-[11px] font-black uppercase text-[#FFED79] tracking-wider">
                       DSP-02
                     </span>
                     <h4 className="font-display text-lg font-bold text-[#FFEFD7]">
@@ -384,7 +378,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         }`}
                       />
                     </div>
-                    <span className="font-mono text-[8px] text-[#FFEFD7]/60 font-bold uppercase">
+                    <span className="font-mono text-[11px] text-[#FFEFD7]/60 font-bold uppercase">
                       {audioNormalization ? "ENGAGED" : "BYPASS"}
                     </span>
                   </div>
@@ -408,7 +402,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   }`}
                 >
                   <div className="flex flex-col gap-1">
-                    <span className="font-mono text-[9px] font-black uppercase text-[#FFED79] tracking-wider">
+                    <span className="font-mono text-[11px] font-black uppercase text-[#FFED79] tracking-wider">
                       DSP-03
                     </span>
                     <h4 className="font-display text-lg font-bold text-[#FFEFD7]">
@@ -433,7 +427,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         }`}
                       />
                     </div>
-                    <span className="font-mono text-[8px] text-[#FFEFD7]/60 font-bold uppercase">
+                    <span className="font-mono text-[11px] text-[#FFEFD7]/60 font-bold uppercase">
                       {streamerSafe ? "ENGAGED" : "BYPASS"}
                     </span>
                   </div>
@@ -457,7 +451,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   }`}
                 >
                   <div className="flex flex-col gap-1">
-                    <span className="font-mono text-[9px] font-black uppercase text-[#FFED79] tracking-wider">
+                    <span className="font-mono text-[11px] font-black uppercase text-[#FFED79] tracking-wider">
                       DSP-04
                     </span>
                     <h4 className="font-display text-lg font-bold text-[#FFEFD7]">
@@ -482,7 +476,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         }`}
                       />
                     </div>
-                    <span className="font-mono text-[8px] text-[#FFEFD7]/60 font-bold uppercase">
+                    <span className="font-mono text-[11px] text-[#FFEFD7]/60 font-bold uppercase">
                       {highFidelity ? "ENGAGED" : "BYPASS"}
                     </span>
                   </div>
@@ -499,7 +493,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               <div className="p-6 bg-[#161a12] border border-[#8A55B3]/60 rounded-sm dl-panel flex flex-col gap-5 shadow-lg">
                 <div className="flex items-center justify-between pb-3 border-b border-[#FFEFD7]/15">
                   <div>
-                    <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#FFFFFF] bg-[#8A55B3] px-2 py-0.5 rounded-xs">
+                    <span className="font-mono text-[11px] font-black uppercase tracking-widest text-[#FFFFFF] bg-[#8A55B3] px-2 py-0.5 rounded-xs">
                       ACCESS PERMISSIONS
                     </span>
                     <h3 className="font-display text-2xl font-bold text-[#FFEFD7] deadlock-hero-title mt-1">
@@ -508,7 +502,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 bg-[#10130D] px-3 py-1.5 border border-[#8A55B3]/40 rounded-xs font-mono text-xs">
-                    <span className="text-[#FFEFD7]/50 uppercase text-[10px]">STATUS:</span>
+                    <span className="text-[#FFEFD7]/50 uppercase text-[11px]">STATUS:</span>
                     <span className={djRoleId ? "text-[#70F8C1] font-bold" : "text-[#FFED79] font-bold"}>
                       {djRoleId ? "RESTRICTED" : "OPEN"}
                     </span>
@@ -543,19 +537,19 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 {/* Permission Scope Matrix */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-[#FFEFD7]/10 font-mono text-xs">
                   <div className="p-2 bg-[#10130D] border border-[#FFEFD7]/10 rounded-xs text-center">
-                    <span className="text-[9px] text-[#FFEFD7]/50 block">SKIP TRACK</span>
+                    <span className="text-[11px] text-[#FFEFD7]/50 block">SKIP TRACK</span>
                     <span className="font-bold text-[#5FE69E]">{djRoleId ? "DJ ROLE" : "ALL MEMBERS"}</span>
                   </div>
                   <div className="p-2 bg-[#10130D] border border-[#FFEFD7]/10 rounded-xs text-center">
-                    <span className="text-[9px] text-[#FFEFD7]/50 block">GAIN TUNING</span>
+                    <span className="text-[11px] text-[#FFEFD7]/50 block">GAIN TUNING</span>
                     <span className="font-bold text-[#5FE69E]">{djRoleId ? "DJ ROLE" : "ALL MEMBERS"}</span>
                   </div>
                   <div className="p-2 bg-[#10130D] border border-[#FFEFD7]/10 rounded-xs text-center">
-                    <span className="text-[9px] text-[#FFEFD7]/50 block">QUEUE TRACK</span>
+                    <span className="text-[11px] text-[#FFEFD7]/50 block">QUEUE TRACK</span>
                     <span className="font-bold text-[#FFED79]">ALL MEMBERS</span>
                   </div>
                   <div className="p-2 bg-[#10130D] border border-[#FFEFD7]/10 rounded-xs text-center">
-                    <span className="text-[9px] text-[#FFEFD7]/50 block">EJECT BOT</span>
+                    <span className="text-[11px] text-[#FFEFD7]/50 block">EJECT BOT</span>
                     <span className="font-bold text-[#8A55B3]">ADMIN ONLY</span>
                   </div>
                 </div>
@@ -596,7 +590,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                       }`}
                     >
                       <span className="text-base block">{rate} KBPS</span>
-                      <span className="text-[10px] opacity-75">
+                      <span className="text-[11px] opacity-75">
                         {rate === "96" ? "VOICE LOW-BW" : rate === "128" ? "STANDARD" : "HIGH QUALITY"}
                       </span>
                     </button>
@@ -608,7 +602,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               <div className="p-6 bg-[#12150e] border border-[#FFEFD7]/20 rounded-sm dl-panel flex flex-col gap-4 shadow-md">
                 <div className="flex items-center justify-between pb-2 border-b border-[#FFEFD7]/15">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-[9px] font-black text-[#10130D] bg-[#FFED79] px-2 py-0.5 rounded-xs uppercase">
+                    <span className="font-mono text-[11px] font-black text-[#10130D] bg-[#FFED79] px-2 py-0.5 rounded-xs uppercase">
                       DIAGNOSTICS
                     </span>
                     <h4 className="font-display text-lg font-bold text-[#FFEFD7]">
@@ -621,24 +615,24 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 {/* DSP Stages Flow */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-xs">
                   <div className="p-2.5 bg-[#10130D] border border-[#FFED79]/30 rounded-xs flex flex-col">
-                    <span className="text-[9px] text-[#FFED79] uppercase">STAGE 1</span>
+                    <span className="text-[11px] text-[#FFED79] uppercase">STAGE 1</span>
                     <span className="font-bold text-[#FFEFD7]">INPUT BUFFER</span>
-                    <span className="text-[9px] text-[#FFEFD7]/50 mt-1">256ms Ring Array</span>
+                    <span className="text-[11px] text-[#FFEFD7]/50 mt-1">256ms Ring Array</span>
                   </div>
                   <div className="p-2.5 bg-[#10130D] border border-[#5FE69E]/30 rounded-xs flex flex-col">
-                    <span className="text-[9px] text-[#5FE69E] uppercase">STAGE 2</span>
+                    <span className="text-[11px] text-[#5FE69E] uppercase">STAGE 2</span>
                     <span className="font-bold text-[#FFEFD7]">SINC RESAMPLE</span>
-                    <span className="text-[9px] text-[#FFEFD7]/50 mt-1">48,000 Hz Stereo</span>
+                    <span className="text-[11px] text-[#FFEFD7]/50 mt-1">48,000 Hz Stereo</span>
                   </div>
                   <div className="p-2.5 bg-[#10130D] border border-[#70F8C1]/30 rounded-xs flex flex-col">
-                    <span className="text-[9px] text-[#70F8C1] uppercase">STAGE 3</span>
+                    <span className="text-[11px] text-[#70F8C1] uppercase">STAGE 3</span>
                     <span className="font-bold text-[#FFEFD7]">R128 LIMITER</span>
-                    <span className="text-[9px] text-[#FFEFD7]/50 mt-1">-14.0 LUFS Ceiling</span>
+                    <span className="text-[11px] text-[#FFEFD7]/50 mt-1">-14.0 LUFS Ceiling</span>
                   </div>
                   <div className="p-2.5 bg-[#10130D] border border-[#8A55B3]/30 rounded-xs flex flex-col">
-                    <span className="text-[9px] text-[#8A55B3] uppercase">STAGE 4</span>
+                    <span className="text-[11px] text-[#8A55B3] uppercase">STAGE 4</span>
                     <span className="font-bold text-[#FFEFD7]">OPUS SOCKET</span>
-                    <span className="text-[9px] text-[#FFEFD7]/50 mt-1">{codecBitrate} kbps Duplex</span>
+                    <span className="text-[11px] text-[#FFEFD7]/50 mt-1">{codecBitrate} kbps Duplex</span>
                   </div>
                 </div>
               </div>
@@ -688,8 +682,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               =================================================================== */}
           <div className="p-4 bg-[#141810]/95 border border-[#5FE69E]/40 rounded-sm dl-panel flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
             <div className="flex items-center gap-2 text-xs font-mono text-[#FFEFD7]/75">
-              <span className="w-2 h-2 rounded-full bg-[#5FE69E] animate-ping" />
-              <span>CHANGES READY TO COMMIT</span>
+              <span className={`w-2 h-2 rounded-full ${saveMessage ? "bg-[#70F8C1]" : "bg-[#5FE69E]"} animate-ping`} />
+              <span>{saveMessage || "CHANGES READY TO COMMIT"}</span>
             </div>
 
             <button
@@ -697,7 +691,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               disabled={saving}
               className="dl-button dl-button-mint w-full sm:w-auto text-xs font-black px-6 py-2.5 shadow-[0_0_20px_rgba(95,230,158,0.5)] cursor-pointer"
             >
-              {saving ? "SAVING CALIBRATION..." : "SAVE SETTINGS"}
+              {saving ? "SAVING CALIBRATION..." : saveMessage || "SAVE SETTINGS"}
             </button>
           </div>
         </main>
