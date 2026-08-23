@@ -13,28 +13,38 @@ export const TelemetryBackground: React.FC<TelemetryBackgroundProps> = ({
 
   useEffect(() => {
     if (externalMouseX !== undefined && externalMouseY !== undefined) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let targetX = 0;
     let targetY = 0;
     let currentX = 0;
     let currentY = 0;
+    let isRunning = false;
     let animationFrameId: number;
 
     const handleMouseMove = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
       targetX = (e.clientX - innerWidth / 2) / (innerWidth / 2);
       targetY = (e.clientY - innerHeight / 2) / (innerHeight / 2);
+      if (!isRunning) {
+        isRunning = true;
+        animationFrameId = requestAnimationFrame(animate);
+      }
     };
 
     const animate = () => {
       currentX += (targetX - currentX) * 0.05;
       currentY += (targetY - currentY) * 0.05;
       setInternalMouse({ x: currentX, y: currentY });
-      animationFrameId = requestAnimationFrame(animate);
+
+      if (Math.abs(targetX - currentX) > 0.001 || Math.abs(targetY - currentY) > 0.001) {
+        animationFrameId = requestAnimationFrame(animate);
+      } else {
+        isRunning = false;
+      }
     };
 
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    animationFrameId = requestAnimationFrame(animate);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);

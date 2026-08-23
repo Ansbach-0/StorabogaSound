@@ -204,7 +204,7 @@ export const App: React.FC = () => {
       tooltipDelay={100}
       showTierBadge={true}
     >
-      <div className="relative min-h-screen w-full bg-[#10130D] text-[#FFEFD7] overflow-x-hidden selection:bg-[#70F8C1] selection:text-[#10130D] flex flex-col justify-between">
+      <div className="relative min-h-screen w-full bg-off-black text-off-white overflow-x-hidden selection:bg-soul selection:text-off-black flex flex-col justify-between">
         {/* Background Ambience Layers: Paper grain + Smoke + Dedicated Screen Backgrounds */}
         <div className="fixed inset-0 paper-grain opacity-25 pointer-events-none z-0" />
         <div className="fixed inset-0 smoke-backdrop pointer-events-none z-0" />
