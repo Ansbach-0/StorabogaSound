@@ -37,3 +37,6 @@ dist/
 # Design comps (reference only, not deployed as React is the real frontend)
 frontend/comp/*.png
 frontend/comp/*.bak.*
+
+# design-tool internals
+.impeccable/

@@ -181,7 +181,7 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
       }
     });
 
-    let topRequester = "Citadel Citizen";
+    let topRequester = "Unknown listener";
     let maxCount = 0;
     Object.entries(requesterCounts).forEach(([name, count]) => {
       if (count > maxCount) {
@@ -212,13 +212,13 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex flex-col">
             <div className="flex items-center gap-3 mb-1">
-              <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#10130D] bg-[#ffc533] px-2.5 py-0.5 transform -skew-x-6 flex items-center gap-1.5 shadow-md">
-                <DeadlockIcon name="gold" isDirectImg className="w-3.5 h-3.5" />
-                <span>ARCHIVE VAULT</span>
+              <span className="font-mono text-[11px] font-black uppercase tracking-widest text-[#10130D] bg-[#ffc533] px-2.5 py-0.5 transform -skew-x-6 flex items-center gap-1.5 shadow-md">
+                <DeadlockIcon name="ammo_clip_size" className="w-3.5 h-3.5 text-[#10130D]" />
+                <span>ARCHIVE LEDGER</span>
               </span>
               <span className="font-mono text-xs text-[#FFED79] flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#ffc533] animate-ping" />
-                <span>{effectiveHistory.length} BROADCASTS CATALOGUED</span>
+                <span>{effectiveHistory.length} TRACKS LOGGED</span>
               </span>
             </div>
 
@@ -227,15 +227,15 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
             </h1>
 
             <p className="mt-2 text-xs font-body text-[#FFEFD7]/70">
-              Historical broadcast log and master recordings.
+              Complete history of tracks played in this server.
             </p>
           </div>
 
           <div className="flex items-center gap-3 self-start lg:self-center">
-            <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-[#10130D] border-2 border-[#ffc533]/60 rounded-sm shadow-[0_0_20px_rgba(255,197,51,0.25)] transform rotate-1">
+            <div className="flex items-center gap-2.5 px-3 py-1.5 bg-[#10130D] border-2 border-[#ffc533] rounded-sm shadow-[0_0_20px_rgba(255,197,51,0.25)] transform rotate-1">
               <DeadlockIcon name="duration" className="w-5 h-5 text-[#ffc533]" />
               <div className="flex flex-col">
-                <span className="font-mono text-[10px] font-black text-[#ffc533] uppercase tracking-widest">
+                <span className="font-mono text-[11px] font-black text-[#ffc533] uppercase tracking-widest">
                   TOTAL AIRTIME
                 </span>
                 <span className="font-display text-lg font-bold text-[#FFEFD7] leading-none">
@@ -382,7 +382,7 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
                     <div className="absolute inset-0 paper-grain opacity-15 pointer-events-none" />
 
                     {/* Top Record Tag & Accession ID */}
-                    <div className="relative z-10 flex items-center justify-between border-b border-[#FFEFD7]/10 pb-2 text-[10px] font-mono">
+                    <div className="relative z-10 flex items-center justify-between border-b border-[#FFEFD7]/10 pb-2 text-[11px] font-mono">
                       <div className="flex items-center gap-2">
                         <span
                           className="px-2 py-0.5 rounded-xs font-black uppercase text-[#10130D]"
@@ -435,9 +435,9 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
                     {/* Bottom: Requester Info + Duration + Replay Button */}
                     <div className="relative z-10 flex items-center justify-between gap-3 pt-2 border-t border-[#FFEFD7]/10">
                       <div className="flex items-center gap-1.5 text-xs font-mono text-[#FFEFD7]/70 truncate">
-                        <span className="text-[#FFEFD7]/40 uppercase text-[10px]">REQ:</span>
+                        <span className="text-[#FFEFD7]/40 uppercase text-[11px]">REQ:</span>
                         <span className="font-bold text-[#FFEFD7] truncate max-w-[120px]">
-                          {track.requester?.name || "Citadel Citizen"}
+                          {track.requester?.name || "Unknown listener"}
                         </span>
                         <span className="text-[#70F8C1] ml-1">
                           ({formatDuration(track.duration_ms)})
@@ -446,7 +446,7 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
 
                       <button
                         onClick={() => onPlayTrack?.(track)}
-                        className="dl-button dl-button-amber text-xs font-black px-3.5 py-1.5 flex items-center gap-1.5 shrink-0 shadow-md cursor-pointer group-hover:scale-102"
+                        className="dl-button dl-button-amber text-xs font-black px-3.5 py-1.5 flex items-center gap-1.5 shrink-0 shadow-md cursor-pointer group-hover:scale-[1.02]"
                         title={`Replay ${track.title}`}
                         aria-label={`Replay ${track.title}`}
                       >
@@ -484,7 +484,7 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
               <h3 className="font-display text-xl font-bold tracking-wider text-[#FFEFD7]">
                 LEDGER AUDIT RECORD
               </h3>
-              <span className="font-mono text-[10px] text-[#ffc533] uppercase tracking-widest block font-bold">
+              <span className="font-mono text-[11px] text-[#ffc533] uppercase tracking-widest block font-bold">
                 AUDIT REGISTRY // VERIFIED
               </span>
             </div>
@@ -536,7 +536,7 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
                   />
                 ))}
               </div>
-              <span className="font-mono text-[8px] text-[#FFEFD7]/50 tracking-widest uppercase">
+              <span className="font-mono text-[11px] text-[#FFEFD7]/50 tracking-widest uppercase">
                 CITADEL AUDIO REPOSITORY
               </span>
             </div>

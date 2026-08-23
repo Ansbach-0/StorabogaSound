@@ -606,9 +606,12 @@ body {
 
 .dl-progress-fill {
   height: 100%;
+  width: 100%;
+  transform-origin: 0% 50%;
   background: linear-gradient(90deg, #5fe69e 0%, #70f8c1 80%, #99ffd6 100%);
   box-shadow: 0 0 10px rgba(112, 248, 193, 0.7);
-  transition: width 120ms linear;
+  transition: transform 120ms linear;
+  will-change: transform;
 }
 
 /* Volume Slider */
@@ -793,6 +796,21 @@ input[type="range"].dl-slider::-webkit-slider-thumb {
   100% {
     background-position: 0 100%;
   }
+}
+
+@keyframes dl-eq-bar {
+  0%, 100% {
+    transform: scaleY(0.12);
+  }
+  50% {
+    transform: scaleY(0.96);
+  }
+}
+
+.animate-dl-eq {
+  animation: dl-eq-bar 1.2s ease-in-out infinite alternate;
+  transform-origin: bottom;
+  will-change: transform;
 }
 
 /* ============================================================
@@ -1162,6 +1180,7 @@ input[type="range"].dl-slider::-webkit-slider-thumb {
   .animate-dl-float-fast,
   .animate-dl-radar,
   .animate-dl-filament,
+  .animate-dl-eq,
   .animate-pulse,
   .animate-ping {
     animation: none !important;
