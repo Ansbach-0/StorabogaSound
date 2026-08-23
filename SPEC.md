@@ -106,7 +106,7 @@ storaboga-sound/
 │   └── index.html
 ├── bootstrap.py                  # Pterodactyl deploy: clone → .env copy → pip install → launch
 ├── DESIGN.md                     # Token spec (dark base, green accent, dynamic-accent strategy)
-├── AGENTS.md                     # Instructions for the CLI/coding agents
+├── AGENTS.md                     # Instructions for coding agents
 ├── SPEC.md                       # This file
 ├── requirements.txt
 ├── .gitignore
