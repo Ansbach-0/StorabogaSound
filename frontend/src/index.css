@@ -80,6 +80,36 @@
   font-display: swap;
 }
 
+@theme {
+  --color-off-black: #10130D;
+  --color-off-white: #FFEFD7;
+  --color-soul: #70F8C1;
+  --color-shard: #99FFD6;
+  --color-brand-green: #5FE69E;
+  --color-gold: #FFED79;
+  --color-spirit: #8A55B3;
+  --color-weapon: #E58A00;
+  --color-enemy: #FF410D;
+  --color-team1-neutral: #55503E;
+  --color-team2: #4D75C3;
+  --color-steam-blue: #1A9FFF;
+  --color-rank0: #333333;
+  --color-default-bg-1: #161a12;
+  --color-default-bg-2: #24291f;
+  --color-silvered: #C6C6C6;
+  --color-warm-backer: #564a48;
+  --color-card-shape-default: #575757;
+  --color-in-roster-wash: #c3dcd2;
+  --color-priority-amber: #ffc533;
+  --color-priority-mint: #92eac7;
+  --color-high-priority-mint: #33e59f;
+
+  --font-display: 'Reaver', Georgia, serif;
+  --font-body: 'Retail Demo', -apple-system, sans-serif;
+  --font-mono: 'Retail Text Demo', monospace;
+  --font-radiance: 'Radiance', 'Retail Demo', sans-serif;
+}
+
 :root {
   --off-black: #10130D;
   --off-white: #FFEFD7;
@@ -921,16 +951,23 @@ input[type="range"].dl-slider::-webkit-slider-thumb {
 }
 
 /* Asymmetric / Slanted Container Helpers */
+/* Perspective trapezoidal header slant (1.5% skew, not a corner chamfer) */
 .dl-skew-panel {
   clip-path: polygon(0 0, 100% 1.5%, 100% 98.5%, 0 100%);
 }
 
 .dl-diagonal-cut {
-  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+  -webkit-mask-image: url("/assets/masks/button_mask_threshold.png");
+  mask-image: url("/assets/masks/button_mask_threshold.png");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 }
 
 .dl-chamfer-lg {
-  clip-path: polygon(18px 0%, calc(100% - 18px) 0%, 100% 18px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 18px 100%, 0% calc(100% - 18px), 0% 18px);
+  -webkit-mask-image: url("/assets/masks/button_mask_threshold.png");
+  mask-image: url("/assets/masks/button_mask_threshold.png");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 }
 
 /* ============================================================
@@ -1103,6 +1140,36 @@ input[type="range"].dl-slider::-webkit-slider-thumb {
 
 .animate-dl-filament {
   animation: dl-filament-flicker 2s ease-in-out infinite alternate;
+}
+
+/* ============================================================
+   Accessibility: Focus Rings & Reduced Motion Directives
+   ============================================================ */
+
+:focus-visible {
+  outline: 2px solid var(--soul-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-dl-spin-slow,
+  .animate-dl-spin-reverse,
+  .animate-dl-flame-core,
+  .animate-dl-flame-main,
+  .animate-dl-flame-flicker,
+  .animate-dl-float-slow,
+  .animate-dl-float-medium,
+  .animate-dl-float-fast,
+  .animate-dl-radar,
+  .animate-dl-filament,
+  .animate-pulse,
+  .animate-ping {
+    animation: none !important;
+  }
+
+  .dl-progress-fill {
+    transition: none !important;
+  }
 }
 
 
