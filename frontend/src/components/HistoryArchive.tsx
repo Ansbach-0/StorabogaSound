@@ -314,7 +314,12 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
           {/* Sort Selector */}
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "recent" || val === "duration" || val === "title") {
+                setSortBy(val);
+              }
+            }}
             className="bg-[#0e110b] text-[#FFED79] border border-[#FFEFD7]/25 px-3 py-1.5 rounded-xs font-mono text-xs focus:outline-none focus:border-[#ffc533] cursor-pointer"
           >
             <option value="recent">SORT: RECENT</option>
@@ -398,7 +403,7 @@ export const HistoryArchive: React.FC<HistoryArchiveProps> = ({
                           alt={track.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-100"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/assets/images/resonance_cover.jpg";
+                            e.currentTarget.src = "/assets/images/resonance_cover.jpg";
                           }}
                         />
                         {/* Vinyl Groove Sheen Overlay */}

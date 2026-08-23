@@ -24,7 +24,10 @@ export const App: React.FC = () => {
   // App & API states
   const [currentView, setCurrentView] = useState<ViewName>(() => {
     const v = new URLSearchParams(window.location.search).get("view");
-    return (["dashboard", "history", "status", "settings"].includes(v || "") ? v : "dashboard") as ViewName;
+    if (v === "dashboard" || v === "history" || v === "status" || v === "settings") {
+      return v;
+    }
+    return "dashboard";
   });
   const [user, setUser] = useState<User | null>(null);
   const [nowPlaying, setNowPlaying] = useState<Track | null>(null);
@@ -153,7 +156,7 @@ export const App: React.FC = () => {
   // Global Keyboard Shortcuts (Deadlock style)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement).tagName)) {
+      if (e.target instanceof HTMLElement && ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) {
         return;
       }
 

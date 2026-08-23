@@ -17,7 +17,7 @@ const DEFAULT_STATUS: BotStatus = {
   version: "2.4.0",
 };
 
-function formatUptime(seconds: number): { days: number; hours: number; minutes: number; secs: number; text: string } {
+function formatUptime(seconds: number) {
   if (!seconds) return { days: 0, hours: 0, minutes: 0, secs: 0, text: "0s" };
   const days = Math.floor(seconds / (3600 * 24));
   const hours = Math.floor((seconds % (3600 * 24)) / 3600);
