@@ -156,7 +156,7 @@ export const NowPlayingShowcase: React.FC<NowPlayingShowcaseProps> = ({
           alt={track.title}
           className="w-full h-full object-cover object-center opacity-45 filter contrast-125 saturate-125"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = "/assets/images/resonance_cover.jpg";
+            e.currentTarget.src = "/assets/images/resonance_cover.jpg";
           }}
         />
         {/* Halftone Dot Screen on Cover */}

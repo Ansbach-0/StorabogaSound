@@ -74,7 +74,7 @@ export const QueueRoster: React.FC<QueueRosterProps> = ({
                   alt={track.title}
                   className="w-full h-full object-cover transition-transform duration-75 group-hover:scale-105"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/assets/images/resonance_cover.jpg";
+                    e.currentTarget.src = "/assets/images/resonance_cover.jpg";
                   }}
                 />
 
