@@ -62,7 +62,7 @@ A flat, vector-perfect dark dashboard with `faceplate-brass chamfer` panels repe
 
 ## THE LOGO PROBLEM
 
-LO said: "hand-crafted SVGs are AI slop." He's right. A logo that is just Cinzel text in a circle is generic and forgettable.
+Owner verdict: "hand-crafted SVGs are AI slop." That verdict holds. A logo that is just Cinzel text in a circle is generic and forgettable.
 
 **The approach**: Typography-driven, material-enhanced logo. NOT a custom
 drawn SVG. Instead:
